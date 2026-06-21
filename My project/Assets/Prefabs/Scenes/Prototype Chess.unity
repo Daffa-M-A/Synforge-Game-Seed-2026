@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1c2678de550f95a4380d8beb69d0c53a, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -208,6 +208,16 @@ MonoBehaviour:
   tileSize: 1
   yOffSet: 0.2
   boardCenter: {x: 0, y: 0, z: 0}
+  prefabs:
+  - {fileID: 3262298733796543025, guid: c75d25541e8091948a89160f96ad7817, type: 3}
+  - {fileID: 4250761135870673656, guid: 8405d46142648a24b8c6de63469bc23b, type: 3}
+  - {fileID: 1884375990312886374, guid: 0f86f8835253d9349ab68c9330fe9727, type: 3}
+  - {fileID: 8189492818690955346, guid: 19703312a4f93604587cec4af984492e, type: 3}
+  - {fileID: 1622575143322181080, guid: 50727c373dacb8a45a49be528281626a, type: 3}
+  - {fileID: 1884375990312886374, guid: 0f86f8835253d9349ab68c9330fe9727, type: 3}
+  teamMaterials:
+  - {fileID: 2100000, guid: 2fae1ab72a8be9543b6af1f781abb6e1, type: 2}
+  - {fileID: 2100000, guid: c9bd50e13cecc0b46990843c46f2d64e, type: 2}
 --- !u!1 &575250159
 GameObject:
   m_ObjectHideFlags: 0
