@@ -36,6 +36,37 @@ public class ChessPiece : MonoBehaviour
         return r;
     }
 
+    // Check  for available moves in a specific direction
+    protected List<Vector2Int> GetMovesInDirection(ref ChessPiece[,] board, int tileCountX, int tileCountY, Vector2Int direction)
+    {
+        List<Vector2Int> moves = new List<Vector2Int>();
+
+        int x = currentX + direction.x;
+        int y = currentY + direction.y;
+
+        // Loop through the board in the specified direction until we hit the edge of the board or another piece
+        while (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY)
+        {
+            if (board[x, y] == null)
+            {
+                moves.Add(new Vector2Int(x, y)); 
+            }
+            else
+            {
+                if (board[x, y].team != team)
+                {
+                    moves.Add(new Vector2Int(x, y)); 
+                }
+                break; 
+            }
+
+            x += direction.x;
+            y += direction.y;
+        }
+
+        return moves;
+    }
+
     public virtual void SetPosition(Vector3 position, bool force = false)
     {
         desiredPosition = position;

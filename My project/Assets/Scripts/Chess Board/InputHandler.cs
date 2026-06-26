@@ -6,6 +6,7 @@ public class InputHandler : MonoBehaviour
     [Header("Dependencies")]
     public ChessBoardManager boardManager;
     public GenerateBoard generateBoard;
+    public TurnManager turnManager;
 
     [Header("Settings")]
     public float dragOffSet = 1.25f;
@@ -60,6 +61,9 @@ public class InputHandler : MonoBehaviour
 
             if (hitPiece == null) return;
 
+            bool isPieceWhite = hitPiece.team == 0;
+            if (isPieceWhite != turnManager.IsWhiteTurn) return;
+
             currentlyDragging = hitPiece;
             availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
             generateBoard.HighlightTiles(availableMove);
@@ -74,7 +78,14 @@ public class InputHandler : MonoBehaviour
 
                 bool validMove = boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
 
-                if (!validMove) currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                if (validMove)
+                {
+                    turnManager.EndTurn();
+                }
+                else
+                {
+                    currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                }
             }
             else 
             {

@@ -7,72 +7,27 @@ public class Knight : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
-        //Top right
-        int x = currentX + 1;
-        int y = currentY + 2;
-        if(x <  tileCountX  && y < tileCountY)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
+        // List of possible knight moves
+        Vector2Int[] jumpOffsets = {
+            new Vector2Int(1, 2), new Vector2Int(2, 1),
+            new Vector2Int(-1, 2), new Vector2Int(-2, 1),
+            new Vector2Int(1, -2), new Vector2Int(2, -1),
+            new Vector2Int(-1, -2), new Vector2Int(-2, -1)
+        };
 
-        x = currentX + 2;
-        y = currentY + 1;
-        if (x < tileCountX && y < tileCountY)
+        // Check for each possible move
+        foreach (Vector2Int offset in jumpOffsets)
         {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
+            int x = currentX + offset.x;
+            int y = currentY + offset.y;
 
-        //Top left
-        x = currentX - 1;
-        y = currentY + 2;
-        if (x >= 0 && y < tileCountY)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
-
-        x = currentX - 2;
-        y = currentY + 1;
-        if (x >= 0 && y < tileCountY)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
-
-        //Bottom right
-        x = currentX + 1;
-        y = currentY - 2;
-        if (x < tileCountX && y >= 0)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
-
-        x = currentX + 2;
-        y = currentY - 1;
-        if (x < tileCountX && y >= 0)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
-
-        //Bottom left
-        x = currentX - 1;
-        y = currentY - 2;
-        if (x >= 0 && y >= 0)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
-        }
-
-        x = currentX - 2;
-        y = currentY - 1;
-        if (x >= 0 && y >= 0)
-        {
-            if (board[x, y] == null || board[x, y].team != team)
-                r.Add(new Vector2Int(x, y));
+            if (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY)
+            {
+                if (board[x, y] == null || board[x, y].team != team)
+                {
+                    r.Add(new Vector2Int(x, y));
+                }
+            }
         }
 
         return r;
