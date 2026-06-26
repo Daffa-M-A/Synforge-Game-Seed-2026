@@ -19,7 +19,8 @@ public class ChessBoard : MonoBehaviour
 
     //Logic
     private ChessPiece[,] chessPieces;
-    private ChessPiece curentlyDragging;
+    private ChessPiece currentlyDragging;
+    private List<Vector2Int> availableMove = new List<Vector2Int>();
     private List<ChessPiece> deathWhite = new List<ChessPiece>();
     private List<ChessPiece> deathBlack = new List<ChessPiece>();
     private const int TILE_WIDTH = 8;
@@ -46,7 +47,7 @@ public class ChessBoard : MonoBehaviour
 
         RaycastHit info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover")))
+        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
         {
             //Get the tile index that was hit
             Vector2Int hitPosition = LookUpTileIndex(info.transform.gameObject);
@@ -61,7 +62,7 @@ public class ChessBoard : MonoBehaviour
             //if we already hovering over a tile, change the previous one
             if (currentHover != hitPosition)
             {
-                tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Tile");
+                tiles[currentHover.x, currentHover.y].layer = (ContainsValidMove(ref availableMove, currentHover)) ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
                 currentHover = hitPosition;
                 tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
             }
@@ -71,46 +72,57 @@ public class ChessBoard : MonoBehaviour
             {
                 if (chessPieces[hitPosition.x, hitPosition.y] != null)
                 {
-                    curentlyDragging = chessPieces[hitPosition.x, hitPosition.y];
+                    //Is it our turn?
+                    if(true)
+                    {
+                        currentlyDragging = chessPieces[hitPosition.x, hitPosition.y];
+
+                        //Get a list of where I can go, while also highlight the tiles
+                        availableMove = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_WIDTH, TILE_HEIGHT);
+                        HighlightTiles();
+                    }
                 }
             }
 
             //If we are releasing the mouse 1 button
-            if (curentlyDragging != null && Input.GetMouseButtonUp(0))
+            if (currentlyDragging != null && Input.GetMouseButtonUp(0))
             {
-                Vector2Int previousPosisition = new Vector2Int(curentlyDragging.currentX, curentlyDragging.currentY);
+                Vector2Int previousPosisition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
 
-                bool validMove = MoveTo(curentlyDragging, hitPosition.x, hitPosition.y);
+                bool validMove = MoveTo(currentlyDragging, hitPosition.x, hitPosition.y);
                 if (!validMove)
                 {
-                    curentlyDragging.SetPosition(GeTileCenter(previousPosisition.x, previousPosisition.y));
-                    curentlyDragging = null;
+                    currentlyDragging.SetPosition(GeTileCenter(previousPosisition.x, previousPosisition.y));
                 }
+                
+                currentlyDragging = null;
+                RemoveHighlightTiles();
             }
         }
         else
         {
             if (currentHover != -Vector2Int.one)
             {
-                tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Tile");
+                tiles[currentHover.x, currentHover.y].layer = (ContainsValidMove(ref availableMove, currentHover)) ? LayerMask.NameToLayer("Highlight")  : LayerMask.NameToLayer("Tile");
                 currentHover = -Vector2Int.one;
             }
 
-            if (curentlyDragging && Input.GetMouseButtonUp(0))
+            if (currentlyDragging && Input.GetMouseButtonUp(0))
             {
-                curentlyDragging.SetPosition(GeTileCenter(curentlyDragging.currentX, curentlyDragging.currentY));
-                curentlyDragging = null;
+                currentlyDragging.SetPosition(GeTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
+                currentlyDragging = null;
+                RemoveHighlightTiles();
             }
         }
 
         //If we are dragging a piece
-        if(curentlyDragging)
+        if(currentlyDragging)
         {
             Plane horizonPlane = new Plane(Vector3.up, Vector3.up * yOffSet);
             float distance = 0;
             if(horizonPlane.Raycast(ray, out distance))
             {
-                curentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffSet);
+                currentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffSet);
             }
         }
     }
@@ -239,9 +251,45 @@ public class ChessBoard : MonoBehaviour
         return new Vector3(x * tileSize, yOffSet, y * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2);
     }
 
+    //Highlight tiles
+    private void HighlightTiles()
+    {
+        for(int i = 0; i < availableMove.Count; i++)
+        {
+            tiles[availableMove[i].x, availableMove[i].y].layer = LayerMask.NameToLayer("Highlight");
+        }
+    }
+
+    private void RemoveHighlightTiles()
+    {
+        for (int i = 0; i < availableMove.Count; i++)
+        {
+            tiles[availableMove[i].x, availableMove[i].y].layer = LayerMask.NameToLayer("Tile");
+        }
+
+        availableMove.Clear();
+    }
+
     //Operations
+    private bool ContainsValidMove(ref List<Vector2Int> moves, Vector2Int pos)
+    {
+        for(int i = 0; i < moves.Count; i++)
+        {
+            if (moves[i].x == pos.x && moves[i].y == pos.y)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private bool MoveTo(ChessPiece cp, int x, int y)
     {
+        if(!ContainsValidMove(ref availableMove, new Vector2Int(x, y)))
+        {
+            return false;
+        }
+
         Vector2Int previousPosistion = new Vector2Int(cp.currentX, cp.currentY);
 
         //Is there another piece on the target position?
