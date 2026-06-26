@@ -20,6 +20,7 @@ public class ChessBoardManager : MonoBehaviour
     // Constants & Logic Data
     public const int TILE_WIDTH = 8;
     public const int TILE_HEIGHT = 16;
+    public int globalChargeCounter = 0;
     public Vector3 bounds { get; private set; }
 
     // Public variable that will be used for ref in GetAvailableMoves() method of each chess piece
@@ -109,11 +110,51 @@ public class ChessBoardManager : MonoBehaviour
         return false;
     }
 
+    // Update order charge heirarki
+    private void UpdateOrderCharge(ChessPiece resettingPiece)
+    {
+        if (resettingPiece.orderCharge == 0)
+        {
+            globalChargeCounter++;
+            resettingPiece.orderCharge = globalChargeCounter;
+        }
+        else
+        {
+            // When chess piece once before get out of the first tile and reset
+            int oldCharge = resettingPiece.orderCharge;
+
+            for (int x = 0; x < TILE_WIDTH; x++)
+            {
+                for (int y = 0; y < TILE_HEIGHT; y++)
+                {
+                    ChessPiece piece = chessPieces[x, y];
+
+                    if (piece != null && piece.orderCharge > oldCharge)
+                    {
+                        piece.orderCharge--;
+                    }
+                }
+            }
+
+            resettingPiece.orderCharge = globalChargeCounter;
+        }
+    }
+
     public bool MoveTo(ChessPiece cp, int x, int y, List<Vector2Int> availableMove)
     {
         if (!ContainsValidMove(availableMove, new Vector2Int(x, y))) return false;
 
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
+
+        int baseRow = (cp.team == 0) ? 0 : 15;
+        bool wasInBase = (previousPosition.y == baseRow);
+        bool isMovingOut = (y != baseRow);
+
+        if (wasInBase && isMovingOut)
+        {
+            UpdateOrderCharge(cp);
+            Debug.Log($"{cp.type} Tim {cp.team} mendapat Order Charge baru: {cp.orderCharge}");
+        }
 
         if (chessPieces[x, y] != null)
         {

@@ -26,7 +26,7 @@ public class InputHandler : MonoBehaviour
 
         RaycastHit info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        bool isRaycastHit = Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight"));
+        bool isRaycastHit = Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight", "Enemy Highlight"));
 
         HandleHover(isRaycastHit, info);
         HandleClick(isRaycastHit, info);
@@ -35,19 +35,24 @@ public class InputHandler : MonoBehaviour
 
     private void HandleHover(bool isRaycastHit, RaycastHit info)
     {
+        // Cari tahu tim mana yang sedang dipegang (jika ada)
+        int currentTeam = currentlyDragging != null ? currentlyDragging.team : -1;
+
         if (isRaycastHit)
         {
             Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
 
             if (currentHover != hitPosition)
             {
-                generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove);
+                // Mengirimkan array chessPieces dan currentTeam
+                generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove, boardManager.chessPieces, currentTeam);
                 currentHover = hitPosition;
             }
         }
         else if (currentHover != -Vector2Int.one)
         {
-            generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove);
+            // Mengirimkan array chessPieces dan currentTeam
+            generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, currentTeam);
             currentHover = -Vector2Int.one;
         }
     }
@@ -66,7 +71,7 @@ public class InputHandler : MonoBehaviour
 
             currentlyDragging = hitPiece;
             availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-            generateBoard.HighlightTiles(availableMove);
+            generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
         }
 
         if (Input.GetMouseButtonUp(0) && currentlyDragging != null)

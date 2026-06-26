@@ -23,9 +23,16 @@ public class Knight : ChessPiece
 
             if (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY)
             {
-                if (board[x, y] == null || board[x, y].team != team)
+                if (board[x, y] == null)
                 {
                     r.Add(new Vector2Int(x, y));
+                }
+                else if (board[x, y].team != team)
+                {
+                    if (CanCapture(board[x, y]))
+                    {
+                        r.Add(new Vector2Int(x, y));
+                    }
                 }
             }
         }

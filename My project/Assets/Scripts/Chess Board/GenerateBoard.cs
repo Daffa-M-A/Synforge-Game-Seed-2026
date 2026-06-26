@@ -50,24 +50,54 @@ public class GenerateBoard : MonoBehaviour
     }
 
     // changing layer of tiles depending on hover state and available moves
-    public void UpdateHoverState(Vector2Int previousHover, Vector2Int currentHover, List<Vector2Int> availableMoves)
+    public void UpdateHoverState(Vector2Int previousHover, Vector2Int currentHover, List<Vector2Int> availableMoves, ChessPiece[,] board = null, int currentTeam = -1)
     {
         if (previousHover != -Vector2Int.one)
         {
             bool isValid = ContainsValidMove(availableMoves, previousHover);
-            tiles[previousHover.x, previousHover.y].layer = isValid ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
+            if (isValid)
+            {
+                // Check if the tile is occupied by an enemy piece
+                if (board != null && board[previousHover.x, previousHover.y] != null && board[previousHover.x, previousHover.y].team != currentTeam)
+                {
+                    // Change the layer to "Enemy Highlight"
+                    tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Enemy Highlight");
+                }
+                else
+                {
+                    // Change the layer back to "Highlight"
+                    tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Highlight");
+                }
+            }
+            else
+            {
+                // Change the layer back to "Tile"
+                tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Tile");
+            }
         }
 
         if (currentHover != -Vector2Int.one)
-        {
+        { 
             tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
         }
     }
 
-    public void HighlightTiles(List<Vector2Int> availableMoves)
+    public void HighlightTiles(List<Vector2Int> availableMoves, ChessPiece[,] board, int currentTeam)
     {
         for (int i = 0; i < availableMoves.Count; i++)
-            tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Highlight");
+        {
+            int x = availableMoves[i].x;
+            int y = availableMoves[i].y;
+
+            if (board[x, y] != null && board[x, y].team != currentTeam)
+            {
+                tiles[x, y].layer = LayerMask.NameToLayer("Enemy Highlight");
+            }
+            else
+            {
+                tiles[x, y].layer = LayerMask.NameToLayer("Highlight");
+            }
+        }
     }
 
     public void RemoveHighlightTiles(List<Vector2Int> availableMoves)

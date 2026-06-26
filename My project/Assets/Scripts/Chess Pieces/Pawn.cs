@@ -32,17 +32,25 @@ public class Pawn : ChessPiece
         // Kill moves
         if (currentX + 1 < tileCountX && nextY >= 0 && nextY < tileCountY)
         {
-            if (board[currentX + 1, nextY] != null && board[currentX + 1, nextY].team != team)
+            ChessPiece targetRight = board[currentX + 1, nextY];
+            if (targetRight != null && targetRight.team != team)
             {
-                r.Add(new Vector2Int(currentX + 1, nextY));
+                if (CanCapture(targetRight))
+                {
+                    r.Add(new Vector2Int(currentX + 1, nextY));
+                }
             }
         }
 
         if (currentX - 1 >= 0 && nextY >= 0 && nextY < tileCountY)
         {
-            if (board[currentX - 1, nextY] != null && board[currentX - 1, nextY].team != team)
+            ChessPiece targetLeft = board[currentX - 1, nextY];
+            if (targetLeft != null && targetLeft.team != team)
             {
-                r.Add(new Vector2Int(currentX - 1, nextY));
+                if (CanCapture(targetLeft))
+                {
+                    r.Add(new Vector2Int(currentX - 1, nextY));
+                }
             }
         }
 
