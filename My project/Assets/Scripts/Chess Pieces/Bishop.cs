@@ -12,6 +12,8 @@ public class Bishop : ChessPiece
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(-1, 1)));  // Top Left
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(-1, -1))); // Bottom Left
 
+        r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
+
         return r;
     }
 }

@@ -153,7 +153,6 @@ public class ChessBoardManager : MonoBehaviour
         if (wasInBase && isMovingOut)
         {
             UpdateOrderCharge(cp);
-            Debug.Log($"{cp.type} Tim {cp.team} mendapat Order Charge baru: {cp.orderCharge}");
         }
 
         if (chessPieces[x, y] != null)

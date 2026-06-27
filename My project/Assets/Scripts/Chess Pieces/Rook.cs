@@ -11,6 +11,8 @@ public class Rook : ChessPiece
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.down)); // Down
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.left)); // Left
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.right)); // Right
+
+        r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
         return r;
     }
 }
