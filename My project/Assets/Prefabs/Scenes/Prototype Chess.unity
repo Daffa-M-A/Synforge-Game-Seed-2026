@@ -312,6 +312,8 @@ MonoBehaviour:
   teamMaterials:
   - {fileID: 2100000, guid: 2fae1ab72a8be9543b6af1f781abb6e1, type: 2}
   - {fileID: 2100000, guid: c9bd50e13cecc0b46990843c46f2d64e, type: 2}
+  globalChargeCounter: 0
+  isGameOver: 0
 --- !u!114 &664481935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,6 +327,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GenerateBoard
   tileMaterial: {fileID: 2100000, guid: 6235b4da2b5942a41a34e5f65a3549cd, type: 2}
+  fortressMaterial: {fileID: 2100000, guid: 8f0178bb6f7b0b5469fc938b54e18976, type: 2}
 --- !u!64 &664481936
 MeshCollider:
   m_ObjectHideFlags: 0

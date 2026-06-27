@@ -49,6 +49,7 @@ public class ChessPiece : MonoBehaviour
     public virtual bool CanCapture(ChessPiece enemy)
     {
         int myBaseRow = (team == 0) ? 0 : 15;
+        int enemyBaseRow = (team == 0) ? 15 : 0;
 
         // Will always kill inside the area
         if (this.currentY == myBaseRow) return true;
@@ -58,13 +59,19 @@ public class ChessPiece : MonoBehaviour
         bool isEnemyInMyTerritory = (team == 0 && enemy.currentY <= 7) || (team == 1 && enemy.currentY >= 8);
         bool isEnemyInTheirTerritory = (team == 0 && enemy.currentY >= 8) || (team == 1 && enemy.currentY <= 7);
 
+        // Check if enemy piece is inside his base
+        bool isEnemyInTheirBase = (enemy.currentY == enemyBaseRow);
+
+        // Block if enemy piece is inside the base row
+        if (amIInMyTerritory && isEnemyInTheirBase) return false;
+
         // Enemy in our terriroty
         if (isEnemyInMyTerritory) return true;
 
         // Rule 2: Can use sacrifice to kill the enemy piece
         if (amIInMyTerritory && isEnemyInTheirTerritory) return true;
 
-        // Default (check if the order charge allow to kill
+        // Default (check if the order charge allow to kill)
         return this.orderCharge > enemy.orderCharge;
     }
 

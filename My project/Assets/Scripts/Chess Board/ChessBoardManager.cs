@@ -21,6 +21,7 @@ public class ChessBoardManager : MonoBehaviour
     public const int TILE_WIDTH = 8;
     public const int TILE_HEIGHT = 16;
     public int globalChargeCounter = 0;
+    public bool isGameOver = false;
     public Vector3 bounds { get; private set; }
 
     // Public variable that will be used for ref in GetAvailableMoves() method of each chess piece
@@ -61,8 +62,8 @@ public class ChessBoardManager : MonoBehaviour
         chessPieces[0, 15] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
         chessPieces[1, 15] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[2, 15] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-        chessPieces[3, 15] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-        chessPieces[4, 15] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+        chessPieces[3, 15] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+        chessPieces[4, 15] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
         chessPieces[5, 15] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
         chessPieces[6, 15] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[7, 15] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
@@ -177,6 +178,18 @@ public class ChessBoardManager : MonoBehaviour
         chessPieces[x, y] = cp;
         chessPieces[previousPosition.x, previousPosition.y] = null;
         PositionSinglePiece(x, y);
+
+        // Check win condition
+        if (cp.team == 0 && x == 3 && y == 15)
+        {
+            isGameOver = true;
+            Debug.Log("PUTIH MENANG! Fortress Hitam Berhasil Direbut!");
+        }
+        else if (cp.team == 1 && x == 3 && y == 0)
+        {
+            isGameOver = true;
+            Debug.Log("HITAM MENANG! Fortress Putih Berhasil Direbut!");
+        }
 
         return true;
     }

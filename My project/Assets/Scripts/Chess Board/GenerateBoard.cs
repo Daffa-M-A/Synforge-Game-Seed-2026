@@ -5,6 +5,7 @@ public class GenerateBoard : MonoBehaviour
 {
     [Header("Art & Visual")]
     [SerializeField] private Material tileMaterial;
+    [SerializeField] private Material fortressMaterial;
 
     private GameObject[,] tiles;
 
@@ -28,13 +29,22 @@ public class GenerateBoard : MonoBehaviour
 
         Mesh mesh = new Mesh();
         tileObject.AddComponent<MeshFilter>().mesh = mesh;
-        tileObject.AddComponent<MeshRenderer>().material = tileMaterial;
+        MeshRenderer meshRenderer = tileObject.AddComponent<MeshRenderer>();
 
         Vector3[] vertices = new Vector3[4];
         vertices[0] = new Vector3(x * tileSize, yOffSet, y * tileSize) - bounds;
         vertices[1] = new Vector3(x * tileSize, yOffSet, (y + 1) * tileSize) - bounds;
         vertices[2] = new Vector3((x + 1) * tileSize, yOffSet, y * tileSize) - bounds;
         vertices[3] = new Vector3((x + 1) * tileSize, yOffSet, (y + 1) * tileSize) - bounds;
+
+        if ((x == 3 && y == 0) || (x == 3 && y == 15))
+        {
+            meshRenderer.material = fortressMaterial;
+        }
+        else
+        {
+            meshRenderer.material = tileMaterial;
+        }
 
         int[] tris = new int[6] { 0, 1, 2, 1, 3, 2 };
 
