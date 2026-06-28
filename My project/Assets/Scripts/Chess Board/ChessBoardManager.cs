@@ -5,6 +5,7 @@ public class ChessBoardManager : MonoBehaviour
 {
     [Header("Dependencies")]
     public GenerateBoard generateBoard;
+    public TurnManager turnManager;
 
     [Header("Board Settings")]
     public float tileSize = 1.0f;
@@ -27,8 +28,13 @@ public class ChessBoardManager : MonoBehaviour
     // Public variable that will be used for ref in GetAvailableMoves() method of each chess piece
     public ChessPiece[,] chessPieces;
 
-    private List<ChessPiece> deathWhite = new List<ChessPiece>();
-    private List<ChessPiece> deathBlack = new List<ChessPiece>();
+    public int whiteJailCount = 0;
+    public int blackJailCount = 0;
+
+    private void Start()
+    {
+        if (turnManager != null) turnManager.OnTurnChanged += ProcessTurnLogic;
+    }
 
     private void Awake()
     {
@@ -84,7 +90,11 @@ public class ChessBoardManager : MonoBehaviour
         {
             for (int y = 0; y < TILE_HEIGHT; y++)
             {
-                if (chessPieces[x, y] != null) PositionSinglePiece(x, y, true);
+                if (chessPieces[x, y] != null)
+                {
+                    PositionSinglePiece(x, y, true);
+                    chessPieces[x, y].SaveOriginalPosition(x, y);
+                }
             }
         }
     }
@@ -159,20 +169,47 @@ public class ChessBoardManager : MonoBehaviour
         if (chessPieces[x, y] != null)
         {
             ChessPiece ocp = chessPieces[x, y];
-            if (ocp.team == cp.team) return false;
 
-            if (ocp.team == 0)
+            // Release team chess piece
+            if (ocp.team == cp.team)
             {
-                deathWhite.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(new Vector3(8 * tileSize, yOffSet, -1 * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.forward * deathSpacing) * deathWhite.Count);
+                if (ocp.isJailed)
+                {
+                    ReleaseChain(ocp.team, ocp.jailSequenceNumber);
+                }
+                else
+                {
+                    return false;
+                }
             }
+
             else
             {
-                deathBlack.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(new Vector3(-1 * tileSize, yOffSet, 8 * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.back * deathSpacing) * deathBlack.Count);
+                // Jail system
+                ocp.isJailed = true;
+                int jailX = 3;
+                int jailY;
+
+                // White team jail
+                if (ocp.team == 0)
+                {
+                    whiteJailCount++;
+                    ocp.jailSequenceNumber = whiteJailCount;
+                    jailY = 15 - whiteJailCount;
+                }
+                else // Black team jail
+                {
+                    blackJailCount++;
+                    ocp.jailSequenceNumber = blackJailCount;
+                    jailY = blackJailCount;
+                }
+
+                ocp.currentX = jailX;
+                ocp.currentY = jailY;
+                chessPieces[jailX, jailY] = ocp;
+                ocp.SetPosition(GetTileCenter(jailX, jailY));
             }
+            
         }
 
         chessPieces[x, y] = cp;
@@ -183,14 +220,87 @@ public class ChessBoardManager : MonoBehaviour
         if (cp.team == 0 && x == 3 && y == 15)
         {
             isGameOver = true;
-            Debug.Log("PUTIH MENANG! Fortress Hitam Berhasil Direbut!");
+            Debug.Log("Putih menang");
         }
         else if (cp.team == 1 && x == 3 && y == 0)
         {
             isGameOver = true;
-            Debug.Log("HITAM MENANG! Fortress Putih Berhasil Direbut!");
+            Debug.Log("Hitam menang");
         }
 
         return true;
+    }
+
+    // Release any piece who have bigger number that the one released
+    private void ReleaseChain(int teamToFree, int triggerSequence)
+    {
+        List<ChessPiece> freedPieces = new List<ChessPiece>();
+
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                ChessPiece piece = chessPieces[x, y];
+                if (piece != null && piece.team == teamToFree && piece.isJailed)
+                {
+                    if (piece.jailSequenceNumber >= triggerSequence)
+                    {
+                        freedPieces.Add(piece);
+                        chessPieces[x, y] = null;
+                    }
+                }
+            }
+        }
+
+        foreach (ChessPiece piece in freedPieces)
+        {
+            piece.isJailed = false;
+            piece.jailSequenceNumber = 0;
+            piece.isGhost = true;
+            piece.rechargeCountdown = 4; 
+
+            int targetX = piece.originalX;
+            int targetY = piece.originalY;
+
+            int dirY = (piece.team == 0) ? 1 : -1;
+
+            while (chessPieces[targetX, targetY] != null)
+            {
+                targetY += dirY;
+                if (targetY < 0 || targetY >= TILE_HEIGHT)
+                {
+                    targetY -= dirY; 
+                    break;
+                }
+            }
+
+            piece.currentX = targetX;
+            piece.currentY = targetY;
+            chessPieces[targetX, targetY] = piece;
+            piece.SetPosition(GetTileCenter(targetX, targetY));
+
+        }
+
+        if (teamToFree == 0) whiteJailCount = triggerSequence - 1;
+        else blackJailCount = triggerSequence - 1;
+    }
+
+    private void ProcessTurnLogic(bool isWhiteTurn)
+    {
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                if (chessPieces[x, y] != null)
+                {
+                    chessPieces[x, y].TickRechargeCountdown();
+                }
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (turnManager != null) turnManager.OnTurnChanged -= ProcessTurnLogic;
     }
 }

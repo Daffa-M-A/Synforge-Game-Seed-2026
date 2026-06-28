@@ -7,6 +7,8 @@ public class Bishop : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
+        if (isJailed || isGhost) return r;
+
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(1, 1)));   // Top Right
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(1, -1)));  // Bottom Right
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(-1, 1)));  // Top Left

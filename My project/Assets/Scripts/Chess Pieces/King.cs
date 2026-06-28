@@ -7,6 +7,8 @@ public class King : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
+        if (isJailed || isGhost) return r;
+
         Vector2Int[] moveOffsets = {
             new Vector2Int(0, 1),   // Up
             new Vector2Int(0, -1),  // Down

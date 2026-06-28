@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public enum ChessPieceType
 {
@@ -17,6 +18,14 @@ public class ChessPiece : MonoBehaviour
     protected Vector3 desiredPosition;
     protected Vector3 desiredScale = Vector3.one;
 
+    [Header("Jail & Ghost System Data")]
+    public int originalX;
+    public int originalY;
+    public int jailSequenceNumber = 0;
+    public bool isJailed = false;
+    public int rechargeCountdown = 0;
+    public bool isGhost = false;
+
     private void Awake()
     {
         desiredScale = transform.localScale;
@@ -28,9 +37,20 @@ public class ChessPiece : MonoBehaviour
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
     }
 
+    // Used for returning the piece after released from jail
+    public void SaveOriginalPosition(int x, int y)
+    {
+        originalX = x;
+        originalY = y;
+    }
+
     public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        return new List<Vector2Int>();
+        List<Vector2Int> r = new List<Vector2Int>();
+
+        if (isJailed || isGhost) return r;
+
+        return r;
     }
 
     public virtual void SetPosition(Vector3 position, bool force = false)
@@ -48,6 +68,10 @@ public class ChessPiece : MonoBehaviour
     // Check if the order chagre allow chess piece to kill
     public virtual bool CanCapture(ChessPiece enemy)
     {
+        if (this.isGhost || this.isJailed) return false;
+
+        if (enemy.isGhost || enemy.isJailed) return false;
+
         int myBaseRow = (team == 0) ? 0 : 15;
         int enemyBaseRow = (team == 0) ? 15 : 0;
 
@@ -105,6 +129,32 @@ public class ChessPiece : MonoBehaviour
         return captures;
     }
 
+    // Release if team chess piece is adjacent to the player chess piece
+    protected List<Vector2Int> GetAdjacentRelease(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    {
+        List<Vector2Int> libs = new List<Vector2Int>();
+        Vector2Int[] offsets = {
+            new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(1, 0), new Vector2Int(-1, 0),
+            new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+        };
+
+        foreach (Vector2Int offset in offsets)
+        {
+            int x = currentX + offset.x;
+            int y = currentY + offset.y;
+
+            if (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY)
+            {
+                ChessPiece target = board[x, y];
+                if (target != null && target.team == team && target.isJailed)
+                {
+                    libs.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+        return libs;
+    }
+
     // Check for available tiles in specific direction
     protected List<Vector2Int> GetMovesInDirection(ref ChessPiece[,] board, int tileCountX, int tileCountY, Vector2Int direction)
     {
@@ -120,25 +170,41 @@ public class ChessPiece : MonoBehaviour
         // Rule 1: Stop when player move from the first tile to only 7 tiles
         while (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY && currentDistance <= maxDistance)
         {
-            if (board[x, y] == null)
+            ChessPiece target = board[x, y];
+
+            if (target == null || target.isGhost || target.isJailed)
             {
                 moves.Add(new Vector2Int(x, y));
             }
             else
             {
-                if (board[x, y].team != team)
+                if (target.team != team)
                 {
-                    if (CanCapture(board[x, y]))
+                    if (CanCapture(target))
                     {
                         moves.Add(new Vector2Int(x, y));
                     }
                 }
-                break;
+                break; 
             }
             x += direction.x;
             y += direction.y;
-            currentDistance++; // Tambah jarak setiap kali bergeser
+            currentDistance++;
         }
         return moves;
+    }
+
+    // Countdown for ghost
+    public void TickRechargeCountdown()
+    {
+        if (!isGhost) return;
+
+        rechargeCountdown--;
+
+        if (rechargeCountdown <= 0)
+        {
+            isGhost = false;
+            rechargeCountdown = 0;
+        }
     }
 }
