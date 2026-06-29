@@ -231,6 +231,61 @@ public class ChessBoardManager : MonoBehaviour
         return true;
     }
 
+    // Choose random move
+    public void ExecuteRandomMove(int team)
+    {
+        List<ChessPiece> movablePieces = new List<ChessPiece>();
+        Dictionary<ChessPiece, List<Vector2Int>> pieceMoves = new Dictionary<ChessPiece, List<Vector2Int>>();
+
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                ChessPiece cp = chessPieces[x, y];
+
+                if (cp != null && cp.team == team && !cp.isJailed && !cp.isGhost)
+                {
+                    List<Vector2Int> moves = cp.GetAvailableMoves(ref chessPieces, TILE_WIDTH, TILE_HEIGHT);
+                    if (moves.Count > 0)
+                    {
+                        movablePieces.Add(cp);
+                        pieceMoves.Add(cp, moves);
+                    }
+                }
+            }
+        }
+
+        // Logic to choose random
+        if (movablePieces.Count > 0)
+        {
+            // Choose piece
+            ChessPiece randomPiece = movablePieces[Random.Range(0, movablePieces.Count)];
+            List<Vector2Int> availableMoves = pieceMoves[randomPiece];
+
+            // Choose tile
+            Vector2Int randomDest = availableMoves[Random.Range(0, availableMoves.Count)];
+
+            Debug.Log($"[Auto-Move] Memindahkan {randomPiece.type} dari ({randomPiece.currentX}, {randomPiece.currentY}) ke ({randomDest.x}, {randomDest.y})");
+
+            MoveTo(randomPiece, randomDest.x, randomDest.y, availableMoves);
+
+            // Change turn after random move executed
+            if (turnManager != null)
+            {
+                turnManager.EndTurn();
+            }
+        }
+        else
+        {
+            // If there is no available move, skip the turn completely
+            Debug.Log("[Auto-Move] Tidak ada pergerakan valid (Deadlock)! Melewati giliran...");
+            if (turnManager != null)
+            {
+                turnManager.EndTurn();
+            }
+        }
+    }
+
     // Release any piece who have bigger number that the one released
     private void ReleaseChain(int teamToFree, int triggerSequence)
     {
@@ -246,7 +301,7 @@ public class ChessBoardManager : MonoBehaviour
                     if (piece.jailSequenceNumber >= triggerSequence)
                     {
                         freedPieces.Add(piece);
-                        chessPieces[x, y] = null;
+                        chessPieces[x, y] = null; 
                     }
                 }
             }
@@ -257,28 +312,68 @@ public class ChessBoardManager : MonoBehaviour
             piece.isJailed = false;
             piece.jailSequenceNumber = 0;
             piece.isGhost = true;
-            piece.rechargeCountdown = 4; 
+            piece.rechargeCountdown = 4;
+        }
 
-            int targetX = piece.originalX;
-            int targetY = piece.originalY;
+        // Place chess piece in original place
+        List<ChessPiece> unplacedPieces = new List<ChessPiece>();
 
-            int dirY = (piece.team == 0) ? 1 : -1;
-
-            while (chessPieces[targetX, targetY] != null)
+        foreach (ChessPiece piece in freedPieces)
+        {
+            if (chessPieces[piece.originalX, piece.originalY] == null)
             {
-                targetY += dirY;
-                if (targetY < 0 || targetY >= TILE_HEIGHT)
+                piece.currentX = piece.originalX;
+                piece.currentY = piece.originalY;
+                chessPieces[piece.currentX, piece.currentY] = piece;
+                piece.SetPosition(GetTileCenter(piece.currentX, piece.currentY));
+            }
+            else
+            {
+                unplacedPieces.Add(piece);
+            }
+        }
+
+        // Search for other place if the original place is ocuppied and to avoid piled up in a same tile
+        foreach (ChessPiece piece in unplacedPieces)
+        {
+            int baseRow = (piece.team == 0) ? 0 : 15;
+            bool isPlaced = false;
+
+            for (int x = 0; x < TILE_WIDTH; x++)
+            {
+                if (chessPieces[x, baseRow] == null)
                 {
-                    targetY -= dirY; 
-                    break;
+                    piece.currentX = x;
+                    piece.currentY = baseRow;
+                    chessPieces[x, baseRow] = piece;
+                    piece.SetPosition(GetTileCenter(x, baseRow));
+                    isPlaced = true;
+                    break; 
                 }
             }
 
-            piece.currentX = targetX;
-            piece.currentY = targetY;
-            chessPieces[targetX, targetY] = piece;
-            piece.SetPosition(GetTileCenter(targetX, targetY));
+            // Add one (or -1 for black team) if there is no empty tiles in the first tiles
+            if (!isPlaced)
+            {
+                int targetX = piece.originalX;
+                int targetY = piece.originalY;
+                int dirY = (piece.team == 0) ? 1 : -1;
 
+                while (chessPieces[targetX, targetY] != null)
+                {
+                    targetY += dirY;
+                    if (targetY < 0 || targetY >= TILE_HEIGHT)
+                    {
+                        targetY -= dirY;
+                        break;
+                    }
+                }
+
+                piece.currentX = targetX;
+                piece.currentY = targetY;
+                chessPieces[targetX, targetY] = piece;
+                piece.SetPosition(GetTileCenter(targetX, targetY));
+            }
         }
 
         if (teamToFree == 0) whiteJailCount = triggerSequence - 1;

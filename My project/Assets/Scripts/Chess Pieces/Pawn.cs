@@ -57,6 +57,7 @@ public class Pawn : ChessPiece
         }
 
         r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
+        r.AddRange(GetAdjacentRelease(ref board, tileCountX, tileCountY)); // Adjacent release
 
         return r;
     }
