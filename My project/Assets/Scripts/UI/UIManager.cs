@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEditor;
 #endif
 
-public class MainMenu : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
     public void LoadLevel(string sceneName)
     {
