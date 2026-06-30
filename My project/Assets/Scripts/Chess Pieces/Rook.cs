@@ -7,12 +7,15 @@ public class Rook : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
+        if (isJailed || isGhost) return r;
+
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.up)); // Up
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.down)); // Down
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.left)); // Left
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.right)); // Right
 
         r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
+        r.AddRange(GetAdjacentRelease(ref board, tileCountX, tileCountY)); // Adjacent release
         return r;
     }
 }

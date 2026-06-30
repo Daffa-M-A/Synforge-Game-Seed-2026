@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
+using System.Xml.Serialization;
 
 public class ChessBoardManager : MonoBehaviour
 {
     [Header("Dependencies")]
     public GenerateBoard generateBoard;
+    public TurnManager turnManager;
 
     [Header("Board Settings")]
     public float tileSize = 1.0f;
@@ -21,13 +24,19 @@ public class ChessBoardManager : MonoBehaviour
     public const int TILE_WIDTH = 8;
     public const int TILE_HEIGHT = 16;
     public int globalChargeCounter = 0;
+    public bool isGameOver = false;
     public Vector3 bounds { get; private set; }
 
     // Public variable that will be used for ref in GetAvailableMoves() method of each chess piece
     public ChessPiece[,] chessPieces;
 
-    private List<ChessPiece> deathWhite = new List<ChessPiece>();
-    private List<ChessPiece> deathBlack = new List<ChessPiece>();
+    public int whiteJailCount = 0;
+    public int blackJailCount = 0;
+
+    private void Start()
+    {
+        if (turnManager != null) turnManager.OnTurnChanged += ProcessTurnLogic;
+    }
 
     private void Awake()
     {
@@ -61,8 +70,8 @@ public class ChessBoardManager : MonoBehaviour
         chessPieces[0, 15] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
         chessPieces[1, 15] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[2, 15] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-        chessPieces[3, 15] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-        chessPieces[4, 15] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+        chessPieces[3, 15] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+        chessPieces[4, 15] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
         chessPieces[5, 15] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
         chessPieces[6, 15] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[7, 15] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
@@ -83,7 +92,11 @@ public class ChessBoardManager : MonoBehaviour
         {
             for (int y = 0; y < TILE_HEIGHT; y++)
             {
-                if (chessPieces[x, y] != null) PositionSinglePiece(x, y, true);
+                if (chessPieces[x, y] != null)
+                {
+                    PositionSinglePiece(x, y, true);
+                    chessPieces[x, y].SaveOriginalPosition(x, y);
+                }
             }
         }
     }
@@ -158,26 +171,240 @@ public class ChessBoardManager : MonoBehaviour
         if (chessPieces[x, y] != null)
         {
             ChessPiece ocp = chessPieces[x, y];
-            if (ocp.team == cp.team) return false;
 
-            if (ocp.team == 0)
+            // Release team chess piece
+            if (ocp.team == cp.team)
             {
-                deathWhite.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(new Vector3(8 * tileSize, yOffSet, -1 * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.forward * deathSpacing) * deathWhite.Count);
+                if (ocp.isJailed)
+                {
+                    ReleaseChain(ocp.team, ocp.jailSequenceNumber);
+                }
+                else
+                {
+                    return false;
+                }
             }
+
             else
             {
-                deathBlack.Add(ocp);
-                ocp.SetScale(Vector3.one * deathSize);
-                ocp.SetPosition(new Vector3(-1 * tileSize, yOffSet, 8 * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.back * deathSpacing) * deathBlack.Count);
+                // Jail system
+                ocp.isJailed = true;
+                int jailX = 3;
+                int jailY;
+
+                // White team jail
+                if (ocp.team == 0)
+                {
+                    whiteJailCount++;
+                    ocp.jailSequenceNumber = whiteJailCount;
+                    jailY = 15 - whiteJailCount;
+                }
+                else // Black team jail
+                {
+                    blackJailCount++;
+                    ocp.jailSequenceNumber = blackJailCount;
+                    jailY = blackJailCount;
+                }
+
+                ocp.currentX = jailX;
+                ocp.currentY = jailY;
+                chessPieces[jailX, jailY] = ocp;
+                ocp.SetPosition(GetTileCenter(jailX, jailY));
             }
+            
         }
 
         chessPieces[x, y] = cp;
         chessPieces[previousPosition.x, previousPosition.y] = null;
-        PositionSinglePiece(x, y);
+
+        Vector3 startPos = GetTileCenter(previousPosition.x, previousPosition.y);
+        Vector3 endPos = GetTileCenter(x, y);
+
+        cp.currentX = x;
+        cp.currentY = y;
+
+        cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
+
+        // Check win condition
+        if (cp.team == 0 && x == 3 && y == 15)
+        {
+            isGameOver = true;
+            Debug.Log("Putih menang");
+        }
+        else if (cp.team == 1 && x == 3 && y == 0)
+        {
+            isGameOver = true;
+            Debug.Log("Hitam menang");
+        }
 
         return true;
+    }
+
+    // Choose random move
+    public void ExecuteRandomMove(int team)
+    {
+        List<ChessPiece> movablePieces = new List<ChessPiece>();
+        Dictionary<ChessPiece, List<Vector2Int>> pieceMoves = new Dictionary<ChessPiece, List<Vector2Int>>();
+
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                ChessPiece cp = chessPieces[x, y];
+
+                if (cp != null && cp.team == team && !cp.isJailed && !cp.isGhost)
+                {
+                    List<Vector2Int> moves = cp.GetAvailableMoves(ref chessPieces, TILE_WIDTH, TILE_HEIGHT);
+                    if (moves.Count > 0)
+                    {
+                        movablePieces.Add(cp);
+                        pieceMoves.Add(cp, moves);
+                    }
+                }
+            }
+        }
+
+        // Logic to choose random
+        if (movablePieces.Count > 0)
+        {
+            // Choose piece
+            ChessPiece randomPiece = movablePieces[Random.Range(0, movablePieces.Count)];
+            List<Vector2Int> availableMoves = pieceMoves[randomPiece];
+
+            // Choose tile
+            Vector2Int randomDest = availableMoves[Random.Range(0, availableMoves.Count)];
+
+            Debug.Log($"[Auto-Move] Memindahkan {randomPiece.type} dari ({randomPiece.currentX}, {randomPiece.currentY}) ke ({randomDest.x}, {randomDest.y})");
+
+            MoveTo(randomPiece, randomDest.x, randomDest.y, availableMoves);
+
+            // Change turn after random move executed
+            if (turnManager != null)
+            {
+                turnManager.EndTurn();
+            }
+        }
+        else
+        {
+            // If there is no available move, skip the turn completely
+            Debug.Log("Skip turn");
+            if (turnManager != null)
+            {
+                turnManager.EndTurn();
+            }
+        }
+    }
+
+    // Release any piece who have bigger number that the one released
+    private void ReleaseChain(int teamToFree, int triggerSequence)
+    {
+        List<ChessPiece> freedPieces = new List<ChessPiece>();
+
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                ChessPiece piece = chessPieces[x, y];
+                if (piece != null && piece.team == teamToFree && piece.isJailed)
+                {
+                    if (piece.jailSequenceNumber >= triggerSequence)
+                    {
+                        freedPieces.Add(piece);
+                        chessPieces[x, y] = null; 
+                    }
+                }
+            }
+        }
+
+        foreach (ChessPiece piece in freedPieces)
+        {
+            piece.isJailed = false;
+            piece.jailSequenceNumber = 0;
+            piece.isGhost = true;
+            piece.rechargeCountdown = 4;
+        }
+
+        // Place chess piece in original place
+        List<ChessPiece> unplacedPieces = new List<ChessPiece>();
+
+        foreach (ChessPiece piece in freedPieces)
+        {
+            if (chessPieces[piece.originalX, piece.originalY] == null)
+            {
+                piece.currentX = piece.originalX;
+                piece.currentY = piece.originalY;
+                chessPieces[piece.currentX, piece.currentY] = piece;
+                piece.SetPosition(GetTileCenter(piece.currentX, piece.currentY));
+            }
+            else
+            {
+                unplacedPieces.Add(piece);
+            }
+        }
+
+        // Search for other place if the original place is ocuppied and to avoid piled up in a same tile
+        foreach (ChessPiece piece in unplacedPieces)
+        {
+            int baseRow = (piece.team == 0) ? 0 : 15;
+            bool isPlaced = false;
+
+            for (int x = 0; x < TILE_WIDTH; x++)
+            {
+                if (chessPieces[x, baseRow] == null)
+                {
+                    piece.currentX = x;
+                    piece.currentY = baseRow;
+                    chessPieces[x, baseRow] = piece;
+                    piece.SetPosition(GetTileCenter(x, baseRow));
+                    isPlaced = true;
+                    break; 
+                }
+            }
+
+            // Add one (or -1 for black team) if there is no empty tiles in the first tiles
+            if (!isPlaced)
+            {
+                int targetX = piece.originalX;
+                int targetY = piece.originalY;
+                int dirY = (piece.team == 0) ? 1 : -1;
+
+                while (chessPieces[targetX, targetY] != null)
+                {
+                    targetY += dirY;
+                    if (targetY < 0 || targetY >= TILE_HEIGHT)
+                    {
+                        targetY -= dirY;
+                        break;
+                    }
+                }
+
+                piece.currentX = targetX;
+                piece.currentY = targetY;
+                chessPieces[targetX, targetY] = piece;
+                piece.SetPosition(GetTileCenter(targetX, targetY));
+            }
+        }
+
+        if (teamToFree == 0) whiteJailCount = triggerSequence - 1;
+        else blackJailCount = triggerSequence - 1;
+    }
+
+    private void ProcessTurnLogic(bool isWhiteTurn)
+    {
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                if (chessPieces[x, y] != null)
+                {
+                    chessPieces[x, y].TickRechargeCountdown();
+                }
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (turnManager != null) turnManager.OnTurnChanged -= ProcessTurnLogic;
     }
 }

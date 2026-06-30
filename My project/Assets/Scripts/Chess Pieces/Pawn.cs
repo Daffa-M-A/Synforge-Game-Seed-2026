@@ -10,6 +10,8 @@ public class Pawn : ChessPiece
 
         int nextY = currentY + direction;
 
+        if (isJailed || isGhost) return r;
+
         // One tile move
         if (nextY >= 0 && nextY < tileCountY)
         {
@@ -55,6 +57,7 @@ public class Pawn : ChessPiece
         }
 
         r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
+        r.AddRange(GetAdjacentRelease(ref board, tileCountX, tileCountY)); // Adjacent release
 
         return r;
     }

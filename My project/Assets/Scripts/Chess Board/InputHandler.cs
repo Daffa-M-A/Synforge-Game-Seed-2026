@@ -18,6 +18,8 @@ public class InputHandler : MonoBehaviour
 
     private void Update()
     {
+        if (boardManager.isGameOver) return;
+
         if (!currentCamera)
         {
             currentCamera = Camera.main;

@@ -7,6 +7,8 @@ public class Knight : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
+        if (isJailed || isGhost) return r;
+
         // List of possible knight moves
         Vector2Int[] jumpOffsets = {
             new Vector2Int(1, 2), new Vector2Int(2, 1),
@@ -38,6 +40,7 @@ public class Knight : ChessPiece
         }
 
         r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
+        r.AddRange(GetAdjacentRelease(ref board, tileCountX, tileCountY)); // Adjacent release
 
         return r;
     }

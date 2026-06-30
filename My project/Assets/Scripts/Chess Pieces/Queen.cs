@@ -7,6 +7,8 @@ public class Queen : ChessPiece
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
+        if (isJailed || isGhost) return r;
+
         // Rook movements
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.up));
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, Vector2Int.down));
