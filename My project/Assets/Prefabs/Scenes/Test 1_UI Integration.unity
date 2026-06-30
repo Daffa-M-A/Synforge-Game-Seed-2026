@@ -292,6 +292,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChessBoardManager
   generateBoard: {fileID: 664481935}
   turnManager: {fileID: 1701369549}
+  matchManager: {fileID: 0}
   tileSize: 1
   yOffSet: 0.1
   boardCenter: {x: 0, y: -0.5, z: 0}
@@ -586,6 +587,7 @@ GameObject:
   - component: {fileID: 1701369550}
   - component: {fileID: 1701369549}
   - component: {fileID: 1701369551}
+  - component: {fileID: 1701369552}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -634,8 +636,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boardManager: {fileID: 664481934}
   turnManager: {fileID: 1701369549}
+  matchManager: {fileID: 1701369552}
   globalTimerDuration: 900
   playerTimerDuration: 30
+--- !u!114 &1701369552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1701369548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09e3d1cb57480e4d9c0c9f6a4096627, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardManager: {fileID: 664481934}
+  timerManager: {fileID: 1701369551}
+  maxPiecesPerTeam: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

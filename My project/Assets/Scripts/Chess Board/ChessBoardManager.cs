@@ -8,6 +8,7 @@ public class ChessBoardManager : MonoBehaviour
     [Header("Dependencies")]
     public GenerateBoard generateBoard;
     public TurnManager turnManager;
+    public MatchManager matchManager;
 
     [Header("Board Settings")]
     public float tileSize = 1.0f;
@@ -226,15 +227,9 @@ public class ChessBoardManager : MonoBehaviour
         cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
 
         // Check win condition
-        if (cp.team == 0 && x == 3 && y == 15)
+        if (matchManager != null)
         {
-            isGameOver = true;
-            Debug.Log("Putih menang");
-        }
-        else if (cp.team == 1 && x == 3 && y == 0)
-        {
-            isGameOver = true;
-            Debug.Log("Hitam menang");
+            matchManager.CheckWinConditions(cp, x, y);
         }
 
         return true;

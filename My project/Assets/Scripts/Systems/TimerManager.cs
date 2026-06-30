@@ -5,6 +5,7 @@ public class TimerManager : MonoBehaviour
     [Header("Dependencies")]
     public ChessBoardManager boardManager;
     public TurnManager turnManager;
+    public MatchManager matchManager;
 
     [Header("Timer Settings")]
     public float globalTimerDuration = 900f;
@@ -48,7 +49,11 @@ public class TimerManager : MonoBehaviour
         if (currentGlobalTimer <= 0)
         {
             currentGlobalTimer = 0;
-            ExecuteTiebreaker();
+            isTimerActive = false;
+
+            if (matchManager != null)
+                matchManager.ExecuteTiebreaker(); 
+
             return;
         }
 
@@ -78,32 +83,6 @@ public class TimerManager : MonoBehaviour
         currentPlayerTimer = playerTimerDuration;
         nextPlayerLogTime = currentPlayerTimer - 10f;
         Debug.Log($"[TimerManager] Giliran berganti! Player Timer direset ke {playerTimerDuration} detik.");
-    }
-
-    private void ExecuteTiebreaker()
-    {
-        isTimerActive = false;
-        boardManager.isGameOver = true;
-
-        Debug.Log("====================================");
-        Debug.Log("WAKTU GLOBAL HABIS! MEMULAI TIDEBREAKER...");
-
-        int poinPutih = boardManager.blackJailCount; 
-        int poinHitam = boardManager.whiteJailCount; 
-
-        if (poinPutih > poinHitam)
-        {
-            Debug.Log($"TIDEBREAKER: PUTIH MENANG! (Tangkapan: {poinPutih} vs {poinHitam})");
-        }
-        else if (poinHitam > poinPutih)
-        {
-            Debug.Log($"TIDEBREAKER: HITAM MENANG! (Tangkapan: {poinHitam} vs {poinPutih})");
-        }
-        else
-        {
-            Debug.Log($"TIDEBREAKER: DRAW! (Tangkapan Imbang: {poinPutih} - {poinHitam})");
-        }
-        Debug.Log("====================================");
     }
 
     private void OnDestroy()
