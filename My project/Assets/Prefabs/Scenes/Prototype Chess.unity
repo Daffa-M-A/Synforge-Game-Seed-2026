@@ -566,11 +566,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   turnManager: {fileID: 1701369549}
+  pivotPoint: {x: 0, y: -3, z: 0}
+  distance: 16
   transitionSpeed: 3.5
-  whitePosition: {x: -6, y: 8, z: -10}
-  whiteRotation: {x: 45, y: 35, z: 0}
-  blackPosition: {x: 6, y: 8, z: 10}
-  blackRotation: {x: 45, y: 215, z: 0}
+  orbitSpeed: 5
+  whiteYaw: 0
+  blackYaw: 180
+  defaultPitch: 45
+  minPitch: 20
+  maxPitch: 85
 --- !u!1 &1701369548
 GameObject:
   m_ObjectHideFlags: 0

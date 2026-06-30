@@ -5,24 +5,34 @@ public class CameraController : MonoBehaviour
     [Header("Dependencies")]
     public TurnManager turnManager;
 
-    [Header("Transition Settings")]
-    public float transitionSpeed = 3.5f;
+    [Header("Orbit Settings")]
+    public Vector3 pivotPoint = Vector3.zero;
+    public float distance = 18f;
+    public float transitionSpeed = 4f;
+    public float orbitSpeed = 5f;
 
-    [Header("White Camera Position")]
-    public Vector3 whitePosition = new Vector3(-6, 8, -10);
-    public Vector3 whiteRotation = new Vector3(45, 35, 0);
+    [Header("Turn Angles (Horizontal/Yaw)")]
+    public float whiteYaw = 35f;
+    public float blackYaw = 215f;
 
-    [Header("Black Camera Position")]
-    public Vector3 blackPosition = new Vector3(14, 8, 25); 
-    public Vector3 blackRotation = new Vector3(45, 215, 0); 
+    [Header("Pitch Limits (Vertical)")]
+    public float defaultPitch = 45f;
+    public float minPitch = 20f;
+    public float maxPitch = 85f;
 
-    private Vector3 targetPosition;
-    private Quaternion targetRotation;
+    private float targetYaw;
+    private float targetPitch;
+
+    private float currentYaw;
+    private float currentPitch;
 
     private void Start()
     {
-        targetPosition = whitePosition;
-        targetRotation = Quaternion.Euler(whiteRotation);
+        targetYaw = whiteYaw;
+        targetPitch = defaultPitch;
+
+        currentYaw = targetYaw;
+        currentPitch = targetPitch;
 
         if (turnManager != null)
         {
@@ -37,20 +47,38 @@ public class CameraController : MonoBehaviour
             turnManager.OnTurnChanged -= UpdateCameraTarget;
         }
     }
-    
-    // Change position and rotation of camera
+
     private void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * transitionSpeed);
+        HandleOrbit();
 
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * transitionSpeed);
+        currentYaw = Mathf.LerpAngle(currentYaw, targetYaw, Time.deltaTime * transitionSpeed);
+        currentPitch = Mathf.Lerp(currentPitch, targetPitch, Time.deltaTime * transitionSpeed);
+
+        Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
+
+        Vector3 position = pivotPoint - (rotation * Vector3.forward * distance);
+
+        transform.position = position;
+        transform.rotation = rotation;
     }
 
+    // Handle camera movement
+    private void HandleOrbit()
+    {
+        if (Input.GetMouseButton(1))
+        {
+            targetYaw += Input.GetAxis("Mouse X") * orbitSpeed;
+            targetPitch -= Input.GetAxis("Mouse Y") * orbitSpeed;
 
-    // Change depending on the turn
+            targetPitch = Mathf.Clamp(targetPitch, minPitch, maxPitch);
+        }
+    }
+
+    // Return camera to the side of the right team
     private void UpdateCameraTarget(bool isWhiteTurn)
     {
-        targetPosition = isWhiteTurn ? whitePosition : blackPosition;
-        targetRotation = Quaternion.Euler(isWhiteTurn ? whiteRotation : blackRotation);
+        targetYaw = isWhiteTurn ? whiteYaw : blackYaw;
+        targetPitch = defaultPitch;
     }
 }

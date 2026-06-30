@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
+using System.Xml.Serialization;
 
 public class ChessBoardManager : MonoBehaviour
 {
@@ -214,7 +216,14 @@ public class ChessBoardManager : MonoBehaviour
 
         chessPieces[x, y] = cp;
         chessPieces[previousPosition.x, previousPosition.y] = null;
-        PositionSinglePiece(x, y);
+
+        Vector3 startPos = GetTileCenter(previousPosition.x, previousPosition.y);
+        Vector3 endPos = GetTileCenter(x, y);
+
+        cp.currentX = x;
+        cp.currentY = y;
+
+        cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
 
         // Check win condition
         if (cp.team == 0 && x == 3 && y == 15)
@@ -278,7 +287,7 @@ public class ChessBoardManager : MonoBehaviour
         else
         {
             // If there is no available move, skip the turn completely
-            Debug.Log("[Auto-Move] Tidak ada pergerakan valid (Deadlock)! Melewati giliran...");
+            Debug.Log("Skip turn");
             if (turnManager != null)
             {
                 turnManager.EndTurn();

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -17,6 +18,7 @@ public class ChessPiece : MonoBehaviour
 
     protected Vector3 desiredPosition;
     protected Vector3 desiredScale = Vector3.one;
+    protected bool isAnimating = false;
 
     [Header("Jail & Ghost System Data")]
     public int originalX;
@@ -33,7 +35,11 @@ public class ChessPiece : MonoBehaviour
 
     private void Update()
     {
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
+        if (!isAnimating)
+        {
+            transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
+        }
+
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
     }
 
@@ -206,5 +212,75 @@ public class ChessPiece : MonoBehaviour
             isGhost = false;
             rechargeCountdown = 0;
         }
+    }
+
+    // Animation movement
+    public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f)
+    {
+        StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed));
+    }
+
+    private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed)
+    {
+        isAnimating = true;
+
+        transform.position = startPos;
+        desiredPosition = endPos;
+
+        Vector3 direction = (endPos - startPos).normalized;
+        direction.y = 0; 
+
+        Quaternion startRot = transform.rotation;
+        Quaternion targetRot = startRot;
+
+        if (direction != Vector3.zero)
+        {
+            targetRot = Quaternion.LookRotation(direction);
+        }
+
+        if (delay > 0)
+        {
+            float delayElapsed = 0f;
+            while (delayElapsed < delay)
+            {
+                // Turn to target tile
+                transform.rotation = Quaternion.Slerp(startRot, targetRot, delayElapsed / delay);
+                delayElapsed += Time.deltaTime;
+                yield return null;
+            }
+            transform.rotation = targetRot;
+        }
+
+        float distance = Vector3.Distance(startPos, endPos);
+        float dynamicDuration = distance / speed;
+        if (dynamicDuration <= 0f) dynamicDuration = 0.01f;
+
+        float elapsedTime = 0f;
+        while (elapsedTime < dynamicDuration)
+        {
+            transform.position = Vector3.Lerp(startPos, endPos, elapsedTime / dynamicDuration);
+            transform.rotation = targetRot; 
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = endPos;
+
+        // Look front after movement
+        Vector3 idleDirection = (team == 0) ? Vector3.forward : Vector3.back;
+        Quaternion idleRot = Quaternion.LookRotation(idleDirection);
+
+        float returnRotElapsed = 0f;
+        float returnRotDuration = 0.15f;
+
+        while (returnRotElapsed < returnRotDuration)
+        {
+            transform.rotation = Quaternion.Slerp(targetRot, idleRot, returnRotElapsed / returnRotDuration);
+            returnRotElapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.rotation = idleRot;
+        isAnimating = false;
     }
 }
