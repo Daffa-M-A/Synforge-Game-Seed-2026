@@ -136,7 +136,7 @@ public class ChessPiece : MonoBehaviour
     }
 
     // Release if team chess piece is adjacent to the player chess piece
-    protected List<Vector2Int> GetAdjacentRelease(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    protected List<Vector2Int> GetAdjacentRelease(ref ChessPiece[,] board, ref ChessPiece[,] prisonerBoard, int tileCountX, int tileCountY)
     {
         List<Vector2Int> libs = new List<Vector2Int>();
         Vector2Int[] offsets = {
@@ -151,7 +151,8 @@ public class ChessPiece : MonoBehaviour
 
             if (x >= 0 && x < tileCountX && y >= 0 && y < tileCountY)
             {
-                ChessPiece target = board[x, y];
+                ChessPiece target = ChessBoardManager.Instance.prisonerPieces[x, y];
+
                 if (target != null && target.team == team && target.isJailed)
                 {
                     libs.Add(new Vector2Int(x, y));
@@ -282,5 +283,57 @@ public class ChessPiece : MonoBehaviour
 
         transform.rotation = idleRot;
         isAnimating = false;
+    }
+
+    // Animtaion for ghost after released from jail
+    public void AnimateGhostRelease(Vector3 startPos, Vector3 rallyPos, Vector3 finalPos, float speed = 10f)
+    {
+        StartCoroutine(GhostReleaseCoroutine(startPos, rallyPos, finalPos, speed));
+    }
+
+    private IEnumerator GhostReleaseCoroutine(Vector3 startPos, Vector3 rallyPos, Vector3 finalPos, float speed)
+    {
+        isAnimating = true;
+        transform.position = startPos;
+        desiredPosition = finalPos;
+
+        yield return new WaitForSeconds(0.2f);
+
+        yield return StartCoroutine(MoveToTarget(startPos, rallyPos, speed));
+
+        yield return new WaitForSeconds(0.15f);
+
+        yield return StartCoroutine(MoveToTarget(rallyPos, finalPos, speed));
+
+        transform.position = finalPos;
+
+        Vector3 idleDirection = (team == 0) ? Vector3.forward : Vector3.back;
+        transform.rotation = Quaternion.LookRotation(idleDirection);
+
+        isAnimating = false;
+    }
+
+    private IEnumerator MoveToTarget(Vector3 start, Vector3 end, float speed)
+    {
+        Vector3 direction = (end - start).normalized;
+        direction.y = 0;
+
+        if (direction != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(direction);
+        }
+
+        float distance = Vector3.Distance(start, end);
+        float duration = distance / speed;
+        if (duration <= 0f) duration = 0.01f;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            transform.position = Vector3.Lerp(start, end, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = end;
     }
 }

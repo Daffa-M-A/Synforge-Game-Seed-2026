@@ -27,9 +27,11 @@ public class ChessBoardManager : MonoBehaviour
     public int globalChargeCounter = 0;
     public bool isGameOver = false;
     public Vector3 bounds { get; private set; }
+    public static ChessBoardManager Instance;
 
     // Public variable that will be used for ref in GetAvailableMoves() method of each chess piece
     public ChessPiece[,] chessPieces;
+    public ChessPiece[,] prisonerPieces;
 
     public int whiteJailCount = 0;
     public int blackJailCount = 0;
@@ -41,6 +43,8 @@ public class ChessBoardManager : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+        
         yOffSet += transform.position.y;
         bounds = new Vector3((TILE_WIDTH / 2f) * tileSize, 0, (TILE_HEIGHT / 2f) * tileSize) + boardCenter;
 
@@ -54,6 +58,7 @@ public class ChessBoardManager : MonoBehaviour
     private void SpawnAllPieces()
     {
         chessPieces = new ChessPiece[TILE_WIDTH, TILE_HEIGHT];
+        prisonerPieces = new ChessPiece[TILE_WIDTH, TILE_HEIGHT];
         int whiteTeam = 0;
         int blackTeam = 1;
 
@@ -169,38 +174,37 @@ public class ChessBoardManager : MonoBehaviour
             UpdateOrderCharge(cp);
         }
 
+        if (prisonerPieces[x, y] != null)
+        {
+            ChessPiece prisoner = prisonerPieces[x, y];
+
+            if (prisoner.team == cp.team)
+            {
+                ReleaseChain(prisoner.team, prisoner.jailSequenceNumber);
+            }
+        }
+
         if (chessPieces[x, y] != null)
         {
             ChessPiece ocp = chessPieces[x, y];
 
-            // Release team chess piece
             if (ocp.team == cp.team)
             {
-                if (ocp.isJailed)
-                {
-                    ReleaseChain(ocp.team, ocp.jailSequenceNumber);
-                }
-                else
-                {
-                    return false;
-                }
+                return false; 
             }
-
             else
             {
-                // Jail system
                 ocp.isJailed = true;
                 int jailX = 3;
                 int jailY;
 
-                // White team jail
                 if (ocp.team == 0)
                 {
                     whiteJailCount++;
                     ocp.jailSequenceNumber = whiteJailCount;
                     jailY = 15 - whiteJailCount;
                 }
-                else // Black team jail
+                else
                 {
                     blackJailCount++;
                     ocp.jailSequenceNumber = blackJailCount;
@@ -209,10 +213,9 @@ public class ChessBoardManager : MonoBehaviour
 
                 ocp.currentX = jailX;
                 ocp.currentY = jailY;
-                chessPieces[jailX, jailY] = ocp;
-                ocp.SetPosition(GetTileCenter(jailX, jailY));
+                prisonerPieces[jailX, jailY] = ocp;
+                UpdateTileVisuals(jailX, jailY);
             }
-            
         }
 
         chessPieces[x, y] = cp;
@@ -225,6 +228,9 @@ public class ChessBoardManager : MonoBehaviour
         cp.currentY = y;
 
         cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
+
+        UpdateTileVisuals(x, y);
+        UpdateTileVisuals(previousPosition.x, previousPosition.y);
 
         // Check win condition
         if (matchManager != null)
@@ -294,18 +300,23 @@ public class ChessBoardManager : MonoBehaviour
     private void ReleaseChain(int teamToFree, int triggerSequence)
     {
         List<ChessPiece> freedPieces = new List<ChessPiece>();
+        Dictionary<ChessPiece, Vector2Int> jailPositions = new Dictionary<ChessPiece, Vector2Int>();
 
         for (int x = 0; x < TILE_WIDTH; x++)
         {
             for (int y = 0; y < TILE_HEIGHT; y++)
             {
-                ChessPiece piece = chessPieces[x, y];
+                ChessPiece piece = prisonerPieces[x, y];
+
                 if (piece != null && piece.team == teamToFree && piece.isJailed)
                 {
                     if (piece.jailSequenceNumber >= triggerSequence)
                     {
                         freedPieces.Add(piece);
-                        chessPieces[x, y] = null; 
+                        jailPositions.Add(piece, new Vector2Int(x, y));
+
+                        prisonerPieces[x, y] = null;
+                        UpdateTileVisuals(x, y);
                     }
                 }
             }
@@ -317,6 +328,7 @@ public class ChessBoardManager : MonoBehaviour
             piece.jailSequenceNumber = 0;
             piece.isGhost = true;
             piece.rechargeCountdown = 4;
+            piece.SetScale(Vector3.one, true);
         }
 
         // Place chess piece in original place
@@ -326,10 +338,7 @@ public class ChessBoardManager : MonoBehaviour
         {
             if (chessPieces[piece.originalX, piece.originalY] == null)
             {
-                piece.currentX = piece.originalX;
-                piece.currentY = piece.originalY;
-                chessPieces[piece.currentX, piece.currentY] = piece;
-                piece.SetPosition(GetTileCenter(piece.currentX, piece.currentY));
+                AssignFinalPosition(piece, piece.originalX, piece.originalY, jailPositions[piece]);
             }
             else
             {
@@ -347,12 +356,9 @@ public class ChessBoardManager : MonoBehaviour
             {
                 if (chessPieces[x, baseRow] == null)
                 {
-                    piece.currentX = x;
-                    piece.currentY = baseRow;
-                    chessPieces[x, baseRow] = piece;
-                    piece.SetPosition(GetTileCenter(x, baseRow));
+                    AssignFinalPosition(piece, x, baseRow, jailPositions[piece]);
                     isPlaced = true;
-                    break; 
+                    break;
                 }
             }
 
@@ -373,15 +379,57 @@ public class ChessBoardManager : MonoBehaviour
                     }
                 }
 
-                piece.currentX = targetX;
-                piece.currentY = targetY;
-                chessPieces[targetX, targetY] = piece;
-                piece.SetPosition(GetTileCenter(targetX, targetY));
+                AssignFinalPosition(piece, targetX, targetY, jailPositions[piece]);
             }
         }
+    }
 
-        if (teamToFree == 0) whiteJailCount = triggerSequence - 1;
-        else blackJailCount = triggerSequence - 1;
+    // Helper function to assign final position and animate the release of a piece from jail
+    private void AssignFinalPosition(ChessPiece piece, int targetX, int targetY, Vector2Int jailPos)
+    {
+        piece.currentX = targetX;
+        piece.currentY = targetY;
+        chessPieces[targetX, targetY] = piece;
+
+        Vector3 startPos = GetTileCenter(jailPos.x, jailPos.y);
+        Vector3 finalPos = GetTileCenter(targetX, targetY);
+
+        int rallyY = (piece.team == 0) ? -1 : 16;
+        Vector3 rallyPos = GetTileCenter(targetX, rallyY);
+
+        piece.AnimateGhostRelease(startPos, rallyPos, finalPos, 10f);
+    }
+
+    // Visual for prisoner and normal piece in one tile
+    public void UpdateTileVisuals(int x, int y)
+    {
+        if (x < 0 || x >= TILE_WIDTH || y < 0 || y >= TILE_HEIGHT) return;
+
+        ChessPiece active = chessPieces[x, y];
+        ChessPiece prisoner = prisonerPieces[x, y];
+        Vector3 center = GetTileCenter(x, y);
+
+        if (active != null && prisoner != null)
+        {
+            active.SetScale(Vector3.one * 0.5f, false);
+            prisoner.SetScale(Vector3.one * 0.5f, false);
+
+            Vector3 activePos = center; activePos.x -= 0.25f;
+            Vector3 prisonerPos = center; prisonerPos.x += 0.25f;
+
+            active.SetPosition(activePos, false);
+            prisoner.SetPosition(prisonerPos, false);
+        }
+        else if (active != null)
+        {
+            active.SetScale(Vector3.one, false);
+            active.SetPosition(center, false);
+        }
+        else if (prisoner != null)
+        {
+            prisoner.SetScale(Vector3.one, false);
+            prisoner.SetPosition(center, false);
+        }
     }
 
     private void ProcessTurnLogic(bool isWhiteTurn)
