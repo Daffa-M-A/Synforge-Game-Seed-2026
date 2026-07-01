@@ -15,6 +15,8 @@ public class ChessPiece : MonoBehaviour
     public int currentY;
     public ChessPieceType type;
     public int orderCharge = 0;
+    public string pieceName;
+    public string roleName;
 
     protected Vector3 desiredPosition;
     protected Vector3 desiredScale = Vector3.one;

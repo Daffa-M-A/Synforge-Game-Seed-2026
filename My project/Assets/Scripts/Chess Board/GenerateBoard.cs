@@ -64,31 +64,32 @@ public class GenerateBoard : MonoBehaviour
     {
         if (previousHover != -Vector2Int.one)
         {
+            if (tiles[previousHover.x, previousHover.y] == null) return;
+
             bool isValid = ContainsValidMove(availableMoves, previousHover);
             if (isValid)
             {
-                // Check if the tile is occupied by an enemy piece
                 if (board != null && board[previousHover.x, previousHover.y] != null && board[previousHover.x, previousHover.y].team != currentTeam)
                 {
-                    // Change the layer to "Enemy Highlight"
                     tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Enemy Highlight");
                 }
                 else
                 {
-                    // Change the layer back to "Highlight"
                     tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Highlight");
                 }
             }
             else
             {
-                // Change the layer back to "Tile"
                 tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Tile");
             }
         }
 
         if (currentHover != -Vector2Int.one)
-        { 
-            tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
+        {
+            if (tiles[currentHover.x, currentHover.y] != null)
+            {
+                tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
+            }
         }
     }
 

@@ -3,14 +3,30 @@ using UnityEngine;
 
 public class TurnManager : MonoBehaviour
 {
-    public bool IsWhiteTurn { get; private set; } = true;
+    [Header("Turn State")]
+    public bool isWhiteTurn = true;
+    public int currentTurnCount = 1;
 
-    public Action<bool> OnTurnChanged;
+    public event Action<bool> OnTurnChanged;
+
+    private void Start()
+    {
+        OnTurnChanged?.Invoke(isWhiteTurn);
+    }
 
     public void EndTurn()
     {
-        IsWhiteTurn = !IsWhiteTurn;
+        isWhiteTurn = !isWhiteTurn;
 
-        OnTurnChanged?.Invoke(IsWhiteTurn);
+        currentTurnCount++;
+
+        OnTurnChanged?.Invoke(isWhiteTurn);
+    }
+
+    public void ResetMatch()
+    {
+        isWhiteTurn = true;
+        currentTurnCount = 1;
+        OnTurnChanged?.Invoke(isWhiteTurn);
     }
 }

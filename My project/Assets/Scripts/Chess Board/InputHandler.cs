@@ -37,23 +37,35 @@ public class InputHandler : MonoBehaviour
 
     private void HandleHover(bool isRaycastHit, RaycastHit info)
     {
-        // Cari tahu tim mana yang sedang dipegang (jika ada)
+        if (generateBoard == null || boardManager == null) return;
+
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            if (currentHover != -Vector2Int.one)
+            {
+                generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, -1);
+                currentHover = -Vector2Int.one;
+            }
+            return; 
+        }
+
         int currentTeam = currentlyDragging != null ? currentlyDragging.team : -1;
 
         if (isRaycastHit)
         {
+            if (info.collider == null || info.transform == null) return;
+
             Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
 
             if (currentHover != hitPosition)
             {
-                // Mengirimkan array chessPieces dan currentTeam
                 generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove, boardManager.chessPieces, currentTeam);
-                currentHover = hitPosition;
+                currentHover = hitPosition; 
             }
         }
         else if (currentHover != -Vector2Int.one)
         {
-            // Mengirimkan array chessPieces dan currentTeam
             generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, currentTeam);
             currentHover = -Vector2Int.one;
         }
@@ -61,47 +73,54 @@ public class InputHandler : MonoBehaviour
 
     private void HandleClick(bool isRaycastHit, RaycastHit info)
     {
-        if (Input.GetMouseButtonDown(0) && isRaycastHit)
+        if (Input.GetMouseButtonDown(0))
         {
-            Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-            ChessPiece hitPiece = boardManager.chessPieces[hitPosition.x, hitPosition.y];
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
-            if (hitPiece == null) return;
+            if (isRaycastHit)
+            {
+                if (info.transform == null) return;
+                Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
 
-            bool isPieceWhite = hitPiece.team == 0;
-            if (isPieceWhite != turnManager.IsWhiteTurn) return;
+                if (hitPosition == -Vector2Int.one) return;
 
-            currentlyDragging = hitPiece;
-            availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-            generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
+                ChessPiece hitPiece = boardManager.chessPieces[hitPosition.x, hitPosition.y];
+                if (hitPiece == null || hitPiece.isGhost || hitPiece.isJailed) return;
+
+                bool isPieceWhite = hitPiece.team == 0;
+                if (isPieceWhite != turnManager.isWhiteTurn) return;
+
+                currentlyDragging = hitPiece;
+                availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
+                generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
+
+                if (UIManager.Instance != null) UIManager.Instance.ShowPieceInfo(currentlyDragging);
+            }
         }
 
         if (Input.GetMouseButtonUp(0) && currentlyDragging != null)
         {
-            if (isRaycastHit) 
+            if (isRaycastHit && info.transform != null)
             {
                 Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-                Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
-
-                bool validMove = boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
-
-                if (validMove)
+                if (hitPosition != -Vector2Int.one)
                 {
-                    turnManager.EndTurn();
+                    Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
+                    bool validMove = boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
+
+                    if (validMove) turnManager.EndTurn();
+                    else currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
                 }
-                else
-                {
-                    currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
-                }
+                else currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
             }
-            else 
-            {
-                currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
-            }
+            else currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
 
             currentlyDragging = null;
             generateBoard.RemoveHighlightTiles(availableMove);
             availableMove.Clear();
+
+            if (UIManager.Instance != null) UIManager.Instance.HidePieceInfo();
         }
     }
 

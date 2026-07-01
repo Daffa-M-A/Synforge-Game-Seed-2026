@@ -21,6 +21,10 @@ public class ChessBoardManager : MonoBehaviour
     [SerializeField] private GameObject[] whitePrefabs;
     [SerializeField] private GameObject[] blackPrefabs;
 
+    [Header("Piece Naming & Roles")]
+    public TextAsset namesTextFile;
+    private string[] availableNames;
+
     // Constants & Logic Data
     public const int TILE_WIDTH = 8;
     public const int TILE_HEIGHT = 16;
@@ -39,6 +43,11 @@ public class ChessBoardManager : MonoBehaviour
     private void Start()
     {
         if (turnManager != null) turnManager.OnTurnChanged += ProcessTurnLogic;
+        
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateChargeList(chessPieces);
+        }
     }
 
     private void Awake()
@@ -47,6 +56,15 @@ public class ChessBoardManager : MonoBehaviour
         
         yOffSet += transform.position.y;
         bounds = new Vector3((TILE_WIDTH / 2f) * tileSize, 0, (TILE_HEIGHT / 2f) * tileSize) + boardCenter;
+
+        if (namesTextFile != null)
+        {
+            availableNames = namesTextFile.text.Split(new[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+        }
+        else
+        {
+            availableNames = new string[] { "Player1", "Player2", "Player3", "Player4", "Player5" };
+        }
 
         if (generateBoard != null)
             generateBoard.GenerateAllTiles(tileSize, TILE_WIDTH, TILE_HEIGHT, yOffSet, bounds);
@@ -94,6 +112,37 @@ public class ChessBoardManager : MonoBehaviour
 
         cp.type = type;
         cp.team = team;
+
+        // Give name from list of names in the text file
+        string randomName = availableNames[Random.Range(0, availableNames.Length)];
+        string teamPrefix = (team == 0) ? "[A]" : "[B]";
+        cp.pieceName = $"{teamPrefix} {randomName}";
+
+        // Give role name based on the type of chess piece
+        switch (type)
+        {
+            case ChessPieceType.Pawn:
+                cp.roleName = "Runner";
+                break;
+            case ChessPieceType.Knight:
+                cp.roleName = "Scout";
+                break;
+            case ChessPieceType.Bishop:
+                cp.roleName = "Flanker";
+                break;
+            case ChessPieceType.Rook:
+                cp.roleName = "Sprinter";
+                break;
+            case ChessPieceType.Queen:
+                cp.roleName = "Captain";
+                break;
+            case ChessPieceType.King:
+                cp.roleName = "Guardian";
+                break;
+            default:
+                cp.roleName = "Unknown";
+                break;
+        }
 
         return cp;
     }
@@ -242,6 +291,11 @@ public class ChessBoardManager : MonoBehaviour
         if (matchManager != null)
         {
             matchManager.CheckWinConditions(cp, x, y);
+        }
+        
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateChargeList(chessPieces);
         }
 
         return true;
