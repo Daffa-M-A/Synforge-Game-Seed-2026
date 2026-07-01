@@ -120,7 +120,7 @@ public class UIManager : MonoBehaviour
         {
             for (int y = 0; y < 16; y++) 
             {
-                if (activePieces[x, y] != null && !activePieces[x, y].isGhost)
+                if (activePieces[x, y] != null && !activePieces[x, y].isGhost && activePieces[x, y].orderCharge > 0)
                 {
                     allPieces.Add(activePieces[x, y]);
                 }
