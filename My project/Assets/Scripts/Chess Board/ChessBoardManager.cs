@@ -18,8 +18,8 @@ public class ChessBoardManager : MonoBehaviour
     public float deathSpacing = 0.3f;
 
     [Header("Prefabs & Materials")]
-    [SerializeField] private GameObject[] prefabs;
-    [SerializeField] private Material[] teamMaterials;
+    [SerializeField] private GameObject[] whitePrefabs;
+    [SerializeField] private GameObject[] blackPrefabs;
 
     // Constants & Logic Data
     public const int TILE_WIDTH = 8;
@@ -85,10 +85,16 @@ public class ChessBoardManager : MonoBehaviour
 
     private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
     {
-        ChessPiece cp = Instantiate(prefabs[(int)type - 1], transform).GetComponent<ChessPiece>();
+        GameObject[] selectedPrefabs = (team == 0) ? whitePrefabs : blackPrefabs;
+
+        Quaternion startRotation = (team == 0) ? Quaternion.identity : Quaternion.Euler(0, 180, 0);
+
+        GameObject spawnedObj = Instantiate(selectedPrefabs[(int)type - 1], transform.position, startRotation, transform);
+        ChessPiece cp = spawnedObj.GetComponent<ChessPiece>();
+
         cp.type = type;
         cp.team = team;
-        cp.GetComponent<MeshRenderer>().material = teamMaterials[team];
+
         return cp;
     }
 
