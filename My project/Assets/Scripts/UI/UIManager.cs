@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 public class UIManager : MonoBehaviour
 {
@@ -26,8 +23,16 @@ public class UIManager : MonoBehaviour
     {
         Application.Quit();
 
-#if UNITY_EDITOR
         EditorApplication.isPlaying = false;
-#endif
+    }
+
+    public void PauseGameplay()
+    {
+        Time.timeScale = 0f;
+    }
+
+    public void ResumeGameplay()
+    {
+        Time.timeScale = 1f;
     }
 }
