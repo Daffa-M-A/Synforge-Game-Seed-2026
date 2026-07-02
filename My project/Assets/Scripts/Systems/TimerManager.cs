@@ -39,6 +39,12 @@ public class TimerManager : MonoBehaviour
         // Logic for global timer
         currentGlobalTimer -= Time.deltaTime;
 
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateTurnTimerDisplay(currentPlayerTimer);
+            UIManager.Instance.UpdateGlobalTimerDisplay(currentGlobalTimer);
+        }
+
         if (currentGlobalTimer <= nextGlobalLogTime && currentGlobalTimer > 0)
         {
             Debug.Log($"[Global Timer] Sisa waktu: {Mathf.CeilToInt(currentGlobalTimer / 60f)} Menit");
@@ -73,7 +79,7 @@ public class TimerManager : MonoBehaviour
             Debug.Log("[Player Timer] Waktu habis! Sistem memilih pergerakan acak...");
 
             // Random move executed when player timer goes off
-            int currentTeam = turnManager.IsWhiteTurn ? 0 : 1;
+            int currentTeam = turnManager.isWhiteTurn ? 0 : 1;
             boardManager.ExecuteRandomMove(currentTeam);
         }
     }
