@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Sacrifice
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Menangkap musuh yang memiliki charge lebih besar menggunakan sacrifice.
   descriptions:
   - 'Saat masih berada di wilayah sendiri, karakter dapat melakukan Sacrifice. Sacrifice
@@ -35,6 +36,9 @@ MonoBehaviour:
     startPos: {x: 5, y: 12}
     customChargeOrder: 2
     isPrisoner: 0
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 1
     pieceToMove: 2

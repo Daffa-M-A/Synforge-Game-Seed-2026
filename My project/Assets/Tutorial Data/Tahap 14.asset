@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Flag Victory
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Sentuh benteng lawan.
   descriptions:
   - Cara menang lainnya adalah berhasil menyentuh benteng lawan.
@@ -26,6 +27,8 @@ MonoBehaviour:
     isPrisoner: 0
   enemyPieces: []
   forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 5
     pieceToMove: 2

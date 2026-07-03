@@ -27,6 +27,7 @@ public class TutorialStepData : ScriptableObject
     public string stageTitle;
     public bool skipEnemyTurn = true;
     public bool enableTimer = false;
+    public bool showObjectiveHighlight = true;
     [TextArea(2, 3)]
     public string mainInstruction; 
     [TextArea(3, 5)]

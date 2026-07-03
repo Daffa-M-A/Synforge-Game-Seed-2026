@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Rescue
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Sentuh petak prisoner disebelah kanan sprinter untuk membebaskannya.
   descriptions:
   - 'Sentuh rantai prisoner untuk membebaskan mereka.
@@ -44,6 +45,9 @@ MonoBehaviour:
     customChargeOrder: 0
     isPrisoner: 1
   enemyPieces: []
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 2
     pieceToMove: 2

@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Turn Timer
   skipEnemyTurn: 1
   enableTimer: 1
+  showObjectiveHighlight: 0
   mainInstruction: Akhiri giliran dan biarkan sistem menggerakkan karakter secara
     otomatis
   descriptions:
@@ -30,6 +31,9 @@ MonoBehaviour:
     customChargeOrder: 0
     isPrisoner: 0
   enemyPieces: []
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 4
     pieceToMove: 2

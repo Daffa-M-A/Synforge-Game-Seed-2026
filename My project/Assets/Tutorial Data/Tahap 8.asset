@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Prisoner Ghost
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Bebaskan bidak teman lalu gerakkan bidak dan selesaikan beberapa
     turn hingga prisoner yang baru bebas bisa digunakan kembali.
   descriptions:
@@ -35,6 +36,9 @@ MonoBehaviour:
     customChargeOrder: 0
     isPrisoner: 1
   enemyPieces: []
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 2
     pieceToMove: 2

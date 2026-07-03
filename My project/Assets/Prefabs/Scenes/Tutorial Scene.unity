@@ -1770,6 +1770,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 32059d9c16be8854d94b00a3ed35201f, type: 2}
   - {fileID: 11400000, guid: 631b448582761fa4daa7527f607c9cb1, type: 2}
   currentStageIndex: 0
+  enemyMoveDelay: 0.75
+  objectiveHighlightMaterial: {fileID: 2100000, guid: 3d857a503a85d87489d478219526459b, type: 2}
 --- !u!114 &6174671634995765874
 MonoBehaviour:
   m_ObjectHideFlags: 0

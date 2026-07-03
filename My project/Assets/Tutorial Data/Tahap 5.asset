@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Surrounding Catch
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Tangkap musuh yang berada dipetak yang bukan bagian dari gerakan
     bidak.
   descriptions:
@@ -33,6 +34,9 @@ MonoBehaviour:
     startPos: {x: 5, y: 3}
     customChargeOrder: 1
     isPrisoner: 0
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 1
     pieceToMove: 4

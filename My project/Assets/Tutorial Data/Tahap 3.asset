@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Charge Order
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Gerakkan sprinter milik player untuk melihat charge yang diberikan
     di bagian UI.
   descriptions:
@@ -41,6 +42,9 @@ MonoBehaviour:
     startPos: {x: 7, y: 15}
     customChargeOrder: 2
     isPrisoner: 0
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 3
     pieceToMove: 2

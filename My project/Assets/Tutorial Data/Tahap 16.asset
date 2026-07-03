@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Simulasi Mini Match
   skipEnemyTurn: 0
   enableTimer: 1
+  showObjectiveHighlight: 0
   mainInstruction: Menangkan pertandingan menggunakan bidak 4 vs 4 menggunakan cara
     apapun.
   descriptions:

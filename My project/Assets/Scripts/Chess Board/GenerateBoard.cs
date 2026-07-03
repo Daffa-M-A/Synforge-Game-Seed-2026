@@ -138,4 +138,28 @@ public class GenerateBoard : MonoBehaviour
         }
         return false;
     }
+
+    public Material GetTileMaterial(int x, int y)
+    {
+        if (x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1))
+        {
+            if (tiles[x, y] != null)
+            {
+                return tiles[x, y].GetComponent<MeshRenderer>().material;
+            }
+        }
+        return null;
+    }
+
+    
+    public void SetTileMaterial(int x, int y, Material newMaterial)
+    {
+        if (x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1))
+        {
+            if (tiles[x, y] != null && newMaterial != null)
+            {
+                tiles[x, y].GetComponent<MeshRenderer>().material = newMaterial;
+            }
+        }
+    }
 }

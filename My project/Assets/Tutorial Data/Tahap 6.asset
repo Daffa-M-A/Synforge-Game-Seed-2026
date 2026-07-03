@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Prisoner
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Makan kedua bidak musuh dan perhatikan bagaimana bidak musuh menjadi
     prisoner setelah dimakan player.
   descriptions:
@@ -37,6 +38,9 @@ MonoBehaviour:
     startPos: {x: 4, y: 7}
     customChargeOrder: 2
     isPrisoner: 0
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 0
     pieceToMove: 5

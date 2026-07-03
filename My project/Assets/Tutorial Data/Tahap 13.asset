@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Capture Victory
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Tangkap musuh terakhir.
   descriptions:
   - Tangkap seluruh anggota tim lawan untuk memenangkan pertandingan.
@@ -66,6 +67,8 @@ MonoBehaviour:
     customChargeOrder: 0
     isPrisoner: 1
   forceWhiteTurnOnStart: 1
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 1
     pieceToMove: 2

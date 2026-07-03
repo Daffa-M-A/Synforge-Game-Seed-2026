@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Chasedown
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: Tangkap musuh yang mencoba kabur dengan me-reset charge.
   descriptions:
   - 'Setelah lawan melakukan Recharge di benteng, ia masih dapat dikejar selama musuh
@@ -35,6 +36,9 @@ MonoBehaviour:
     startPos: {x: 0, y: 15}
     customChargeOrder: 2
     isPrisoner: 0
+  forceWhiteTurnOnStart: 0
+  enemyAutoMove: 0
+  disableHighlights: 0
   objectives:
   - type: 1
     pieceToMove: 2

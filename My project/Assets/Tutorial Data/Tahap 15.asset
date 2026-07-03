@@ -15,6 +15,7 @@ MonoBehaviour:
   stageTitle: Global Timer & Tiebreaker
   skipEnemyTurn: 1
   enableTimer: 0
+  showObjectiveHighlight: 0
   mainInstruction: 'Jika waktu pertandingan habis:
 
     Tim dengan prisoner lebih
