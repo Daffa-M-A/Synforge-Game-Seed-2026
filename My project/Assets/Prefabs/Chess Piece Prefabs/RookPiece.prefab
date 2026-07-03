@@ -181,6 +181,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: RookPiece_1M
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 512f314999c39034d990d532f44a797b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 661743265c4d2264a8b4942dc95d881f, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 512f314999c39034d990d532f44a797b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
