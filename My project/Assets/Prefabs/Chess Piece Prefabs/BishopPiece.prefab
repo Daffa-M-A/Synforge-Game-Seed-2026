@@ -33,7 +33,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2985625539311389406}
+  - {fileID: 7525199829421992176}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3665636013304305609
@@ -136,7 +136,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!1001 &3379296080284888373
+--- !u!1001 &8062666138472566555
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -200,6 +200,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -2042315119793706111, guid: 6024335a90667d145b68343252e01ea3, type: 3}
+      propertyPath: 'm_Materials.Array.data[4]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b638263394d16e443b22d402fb46f790, type: 2}
     - target: {fileID: 919132149155446097, guid: 6024335a90667d145b68343252e01ea3, type: 3}
       propertyPath: m_Name
       value: BishopPiece_6M
@@ -208,25 +212,13 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 661743265c4d2264a8b4942dc95d881f, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 6024335a90667d145b68343252e01ea3, type: 3}
-      propertyPath: m_CullingMode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 6024335a90667d145b68343252e01ea3, type: 3}
-      propertyPath: m_WarningMessage
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 6024335a90667d145b68343252e01ea3, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6024335a90667d145b68343252e01ea3, type: 3}
---- !u!4 &2985625539311389406 stripped
+--- !u!4 &7525199829421992176 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6024335a90667d145b68343252e01ea3, type: 3}
-  m_PrefabInstance: {fileID: 3379296080284888373}
+  m_PrefabInstance: {fileID: 8062666138472566555}
   m_PrefabAsset: {fileID: 0}
