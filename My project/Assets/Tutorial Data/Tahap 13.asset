@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 13
+  m_EditorClassIdentifier: 
+  stageTitle: Capture Victory
+  skipEnemyTurn: 1
+  enableTimer: 0
+  showObjectiveHighlight: 0
+  mainInstruction: Tangkap musuh terakhir.
+  descriptions:
+  - Tangkap seluruh anggota tim lawan untuk memenangkan pertandingan.
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 6, y: 3}
+    customChargeOrder: 2
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 3
+    team: 1
+    startPos: {x: 6, y: 6}
+    customChargeOrder: 1
+    isPrisoner: 0
+  - pieceType: 2
+    team: 1
+    startPos: {x: 5, y: 1}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 4
+    team: 1
+    startPos: {x: 5, y: 2}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 5
+    team: 1
+    startPos: {x: 5, y: 3}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 6
+    team: 1
+    startPos: {x: 5, y: 4}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 2
+    team: 1
+    startPos: {x: 5, y: 5}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 3
+    team: 1
+    startPos: {x: 5, y: 6}
+    customChargeOrder: 0
+    isPrisoner: 1
+  - pieceType: 3
+    team: 1
+    startPos: {x: 0, y: 0}
+    customChargeOrder: 0
+    isPrisoner: 1
+  forceWhiteTurnOnStart: 1
+  enemyAutoMove: 0
+  disableHighlights: 0
+  objectives:
+  - type: 1
+    pieceToMove: 2
+    targetPos: {x: 6, y: 6}

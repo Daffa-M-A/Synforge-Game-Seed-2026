@@ -29,4 +29,12 @@ public class TurnManager : MonoBehaviour
         currentTurnCount = 1;
         OnTurnChanged?.Invoke(isWhiteTurn);
     }
+
+    public void ForceSetTurn(bool setToWhiteTurn)
+    {
+        if (isWhiteTurn == setToWhiteTurn) return;
+
+        isWhiteTurn = setToWhiteTurn;
+        OnTurnChanged?.Invoke(isWhiteTurn);
+    }
 }

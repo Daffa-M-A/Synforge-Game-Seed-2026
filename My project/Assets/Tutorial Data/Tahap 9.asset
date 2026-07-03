@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 9
+  m_EditorClassIdentifier: 
+  stageTitle: Charge Penalty
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Gerakkan bidak yang terancam ditangkap ke petak pertama, lalu
+    coba gerakkan bidak keluar dan perhatikan bagaimana highlight yang muncul dibatasi.
+  descriptions:
+  - 'Setelah melakukan Charge, jarak gerak maksimum bidak dibatasi menjadi 7 petak
+    selama satu giliran.
+
+'
+  - Setelah itu kemampuan bergeraknya kembali normal. Ini juga berlaku untuk turn
+    pertama untuk masing-masing bidak yang baru bergerak.
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 0, y: 7}
+    customChargeOrder: 0
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 4
+    team: 1
+    startPos: {x: 2, y: 9}
+    customChargeOrder: 0
+    isPrisoner: 0
+  objectives:
+  - type: 0
+    pieceToMove: 2
+    targetPos: {x: 0, y: 0}
+  - type: 0
+    pieceToMove: 2
+    targetPos: {x: 0, y: 7}

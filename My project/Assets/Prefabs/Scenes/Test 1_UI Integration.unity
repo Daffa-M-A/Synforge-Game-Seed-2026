@@ -228,6 +228,21 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1697769659503211456, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
   m_PrefabInstance: {fileID: 1242434773}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &494127161 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7413723549342287292, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+  m_PrefabInstance: {fileID: 1242434773}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &494127162 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4339694636282618489, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+  m_PrefabInstance: {fileID: 1242434773}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &494127163 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6219138969701569181, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+  m_PrefabInstance: {fileID: 1242434773}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &575250159
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,6 +481,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2690555119741869837, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2690555119741869837, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 2690555119741869837, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnMainMenuClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 2690555119741869837, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 3294825846382233750, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -538,6 +569,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4823890631104016165, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4823890631104016165, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 4823890631104016165, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnMainMenuClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4823890631104016165, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 4848517662326605336, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -569,6 +616,22 @@ PrefabInstance:
     - target: {fileID: 4897790537583382135, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287332271592419095, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287332271592419095, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 5287332271592419095, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnReplayClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287332271592419095, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 5530021345304006642, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
@@ -686,6 +749,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6934905676889961929, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6934905676889961929, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 6934905676889961929, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnMainMenuClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 6934905676889961929, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 7475889701480472279, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7475889701480472279, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 7475889701480472279, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnReplayClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 7475889701480472279, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 7560311245434982591, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -773,6 +868,22 @@ PrefabInstance:
     - target: {fileID: 8703551665302007925, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9123770709974841543, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9123770709974841543, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3864305405194288121}
+    - target: {fileID: 9123770709974841543, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnReplayClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 9123770709974841543, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1231,6 +1342,9 @@ MonoBehaviour:
   - {fileID: 483401561}
   - {fileID: 37622627}
   - {fileID: 1732750169}
+  winPanel: {fileID: 494127162}
+  losePanel: {fileID: 494127163}
+  drawPanel: {fileID: 494127161}
 --- !u!64 &4141184046896482857
 MeshCollider:
   m_ObjectHideFlags: 0
