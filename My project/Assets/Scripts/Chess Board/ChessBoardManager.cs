@@ -227,11 +227,6 @@ public class ChessBoardManager : MonoBehaviour
         if (wasInBase && isMovingOut)
         {
             UpdateOrderCharge(cp);
-
-            //vaughan goal 6
-            Animator rechargeAnim = cp.GetComponentInChildren<Animator>();
-            if (rechargeAnim != null) rechargeAnim.SetTrigger("doHappy");
-
         }
 
         if (prisonerPieces[x, y] != null)
@@ -255,18 +250,6 @@ public class ChessBoardManager : MonoBehaviour
             else
             {
                 ocp.isJailed = true;
-
-                // Ambil animator dari kedua belah pihak - Vaughan Goal 6
-                Animator attackerAnim = cp.GetComponentInChildren<Animator>();
-                Animator victimAnim = ocp.GetComponentInChildren<Animator>();
-
-                if (attackerAnim != null) attackerAnim.SetTrigger("doCapture");
-                if (victimAnim != null) 
-                {
-                    victimAnim.SetTrigger("isCaptured");
-                    victimAnim.SetBool("isPrisoner", true);
-                }
-                
                 int jailX = 3;
                 int jailY;
 
@@ -299,7 +282,7 @@ public class ChessBoardManager : MonoBehaviour
         cp.currentX = x;
         cp.currentY = y;
 
-        cp.MoveWithAnimation(startPos, endPos, 0.15f, 1f);
+        cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
 
         UpdateTileVisuals(x, y);
         UpdateTileVisuals(previousPosition.x, previousPosition.y);
@@ -405,15 +388,6 @@ public class ChessBoardManager : MonoBehaviour
             piece.jailSequenceNumber = 0;
             piece.isGhost = true;
             piece.rechargeCountdown = 4;
-
-            //vaughan goal 6
-            Animator pAnim = piece.GetComponentInChildren<Animator>();
-            if (pAnim != null) 
-            {
-                pAnim.SetBool("isPrisoner", false);
-                pAnim.SetTrigger("doHappy");
-            }            
-
             piece.SetScale(Vector3.one, true);
         }
 

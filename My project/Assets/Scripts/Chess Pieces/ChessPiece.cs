@@ -30,12 +30,9 @@ public class ChessPiece : MonoBehaviour
     public int rechargeCountdown = 0;
     public bool isGhost = false;
 
-    protected Animator anim; //Vaughan Goal 4
-
     private void Awake()
     {
         desiredScale = transform.localScale;
-        anim = GetComponentInChildren<Animator>(); //vaughan goal 4
     }
 
     private void Update()
@@ -46,8 +43,6 @@ public class ChessPiece : MonoBehaviour
         }
 
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
-
-        //UpdateTerritoryAnimation(); //vaughan goal 4
     }
 
     // Used for returning the piece after released from jail
@@ -232,24 +227,63 @@ public class ChessPiece : MonoBehaviour
     {
         isAnimating = true;
 
-        // 1. Mulai Animasi
-        if (anim != null) anim.SetBool("isWalking", true);
+        transform.position = startPos;
+        desiredPosition = endPos;
+
+        Vector3 direction = (endPos - startPos).normalized;
+        direction.y = 0; 
+
+        Quaternion startRot = transform.rotation;
+        Quaternion targetRot = startRot;
+
+        if (direction != Vector3.zero)
+        {
+            targetRot = Quaternion.LookRotation(direction);
+        }
+
+        if (delay > 0)
+        {
+            float delayElapsed = 0f;
+            while (delayElapsed < delay)
+            {
+                // Turn to target tile
+                transform.rotation = Quaternion.Slerp(startRot, targetRot, delayElapsed / delay);
+                delayElapsed += Time.deltaTime;
+                yield return null;
+            }
+            transform.rotation = targetRot;
+        }
 
         float distance = Vector3.Distance(startPos, endPos);
-        float duration = (speed <= 0) ? 0.5f : distance / speed; 
-        float elapsed = 0;
+        float dynamicDuration = distance / speed;
+        if (dynamicDuration <= 0f) dynamicDuration = 0.01f;
 
-        while (elapsed < duration)
+        float elapsedTime = 0f;
+        while (elapsedTime < dynamicDuration)
         {
-            transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
-            elapsed += Time.deltaTime;
-            yield return null; 
+            transform.position = Vector3.Lerp(startPos, endPos, elapsedTime / dynamicDuration);
+            transform.rotation = targetRot; 
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
+
         transform.position = endPos;
 
-        // 2. Berhenti Animasi
-        if (anim != null) anim.SetBool("isWalking", false);
+        // Look front after movement
+        Vector3 idleDirection = (team == 0) ? Vector3.forward : Vector3.back;
+        Quaternion idleRot = Quaternion.LookRotation(idleDirection);
 
+        float returnRotElapsed = 0f;
+        float returnRotDuration = 0.15f;
+
+        while (returnRotElapsed < returnRotDuration)
+        {
+            transform.rotation = Quaternion.Slerp(targetRot, idleRot, returnRotElapsed / returnRotDuration);
+            returnRotElapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.rotation = idleRot;
         isAnimating = false;
     }
 
@@ -281,7 +315,7 @@ public class ChessPiece : MonoBehaviour
         isAnimating = false;
     }
 
-    private IEnumerator MoveToTarget(Vector3 start, Vector3 end, float speed) 
+    private IEnumerator MoveToTarget(Vector3 start, Vector3 end, float speed)
     {
         Vector3 direction = (end - start).normalized;
         direction.y = 0;
@@ -303,16 +337,5 @@ public class ChessPiece : MonoBehaviour
             yield return null;
         }
         transform.position = end;
-    }
-
-    public void UpdateTerritoryAnimation() //vaughan goal 4
-    {
-        if (anim == null) return;
-
-        // Tim 0 (White): Home adalah baris 0-7. Tim 1 (Black): Home adalah baris 8-15.
-        bool inHome = (team == 0) ? (currentY <= 7) : (currentY >= 8);
-        
-        // Update parameter di Animator Controller
-        anim.SetBool("isInHomeTerritory", inHome);
     }
 }
