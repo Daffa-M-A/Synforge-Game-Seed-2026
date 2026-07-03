@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Unity.VisualScripting;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -39,6 +41,11 @@ public class UIManager : MonoBehaviour
     [Header("Sprite Assets")]
     public GameObject[] whitePieceIcons;
     public GameObject[] blackPieceIcons;
+
+    [Header("Game Over UI")]
+    public GameObject winPanel;
+    public GameObject losePanel;
+    public GameObject drawPanel;
 
     private void Awake()
     {
@@ -185,6 +192,37 @@ public class UIManager : MonoBehaviour
         PlayerPrefs.SetInt("LevelTerpilih", levelPilihan);
         PlayerPrefs.Save();
         SceneManager.LoadScene(sceneName);
+    }
+
+    // Show game over UI based on the resultTeam parameter
+    public void ShowGameOverUI(int resultTeam)
+    {
+        if (winPanel != null) winPanel.SetActive(false);
+        if (losePanel != null) losePanel.SetActive(false);
+        if (drawPanel != null) drawPanel.SetActive(false);
+
+        if (resultTeam == 0 && winPanel != null) // White win
+        {
+            winPanel.SetActive(true);
+        }
+        else if (resultTeam == 1 && losePanel != null) // Black win
+        {
+            losePanel.SetActive(true);
+        }
+        else if (resultTeam == -1 && drawPanel != null) // Draw
+        {
+            drawPanel.SetActive(true);
+        }
+    }
+
+    public void OnReplayClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void OnMainMenuClicked()
+    {
+        SceneManager.LoadScene("Main Menu");
     }
 
     public void ExitGame()

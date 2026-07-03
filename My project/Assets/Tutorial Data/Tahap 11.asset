@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 11
+  m_EditorClassIdentifier: 
+  stageTitle: Sacrifice
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Menangkap musuh yang memiliki charge lebih besar menggunakan sacrifice.
+  descriptions:
+  - 'Saat masih berada di wilayah sendiri, karakter dapat melakukan Sacrifice. Sacrifice
+    mengabaikan aturan Charge, tetapi tidak dapat langsung menyentuh benteng lawan.
+
+
+    Tidak
+    berlaku pada musuh yang berada di petak pertama.'
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 5, y: 5}
+    customChargeOrder: 1
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 2
+    team: 1
+    startPos: {x: 5, y: 12}
+    customChargeOrder: 2
+    isPrisoner: 0
+  objectives:
+  - type: 1
+    pieceToMove: 2
+    targetPos: {x: 5, y: 12}

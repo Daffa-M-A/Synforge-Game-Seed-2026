@@ -60,8 +60,11 @@ public class InputHandler : MonoBehaviour
 
             if (currentHover != hitPosition)
             {
-                generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove, boardManager.chessPieces, currentTeam);
-                currentHover = hitPosition; 
+                if (AreHighlightsEnabled())
+                {
+                    generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove, boardManager.chessPieces, currentTeam);
+                }
+                currentHover = hitPosition;
             }
         }
         else if (currentHover != -Vector2Int.one)
@@ -93,7 +96,10 @@ public class InputHandler : MonoBehaviour
 
                 currentlyDragging = hitPiece;
                 availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-                generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
+                if (AreHighlightsEnabled())
+                {
+                    generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
+                }
 
                 if (UIManager.Instance != null) UIManager.Instance.ShowPieceInfo(currentlyDragging);
             }
@@ -107,12 +113,32 @@ public class InputHandler : MonoBehaviour
                 if (hitPosition != -Vector2Int.one)
                 {
                     Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
-                    bool validMove = boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
 
-                    if (validMove) turnManager.EndTurn();
-                    else currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                    bool isMoveAllowed = true;
+                    if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
+                    {
+                        isMoveAllowed = TutorialManager.Instance.ValidateMove(currentlyDragging, hitPosition);
+                    }
+
+                    bool validMove = isMoveAllowed && boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
+
+                    if (validMove)
+                    {
+                        turnManager.EndTurn();
+
+                        if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
+                        {
+                            if (TutorialManager.Instance.ShouldSkipEnemyTurn())
+                            {
+                                turnManager.EndTurn();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                    }
                 }
-                else currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
             }
             else currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
 
@@ -133,5 +159,15 @@ public class InputHandler : MonoBehaviour
         {
             currentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffSet);
         }
+    }
+
+    private bool AreHighlightsEnabled()
+    {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
+        {
+            TutorialStepData stage = TutorialManager.Instance.tutorialStages[TutorialManager.Instance.currentStageIndex];
+            return !stage.disableHighlights;
+        }
+        return true;
     }
 }

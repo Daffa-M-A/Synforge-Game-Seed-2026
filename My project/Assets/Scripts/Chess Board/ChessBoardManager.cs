@@ -147,6 +147,82 @@ public class ChessBoardManager : MonoBehaviour
         return cp;
     }
 
+    // Special spawn function for tutorial
+    public void SetupTutorialBoard(List<PieceSetup> playerPieces, List<PieceSetup> enemyPieces)
+    {
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            for (int y = 0; y < TILE_HEIGHT; y++)
+            {
+                if (chessPieces[x, y] != null) Destroy(chessPieces[x, y].gameObject);
+                if (prisonerPieces[x, y] != null) Destroy(prisonerPieces[x, y].gameObject);
+
+                chessPieces[x, y] = null;
+                prisonerPieces[x, y] = null;
+                UpdateTileVisuals(x, y);
+            }
+        }
+
+        whiteJailCount = 0;
+        blackJailCount = 0;
+        globalChargeCounter = 0;
+
+        void SpawnFromSetup(List<PieceSetup> setups)
+        {
+            foreach (var setup in setups)
+            {
+                ChessPiece cp = SpawnSinglePiece(setup.pieceType, setup.team);
+                cp.orderCharge = setup.customChargeOrder;
+                cp.SaveOriginalPosition(setup.startPos.x, setup.startPos.y);
+
+                if (setup.isPrisoner)
+                {
+                    cp.isJailed = true;
+                    int jailX = 3;
+                    int jailY;
+
+                    if (cp.team == 0)
+                    {
+                        whiteJailCount++;
+                        cp.jailSequenceNumber = whiteJailCount;
+                        jailY = 15 - whiteJailCount;
+                    }
+                    else
+                    {
+                        blackJailCount++;
+                        cp.jailSequenceNumber = blackJailCount;
+                        jailY = blackJailCount;
+                    }
+
+                    cp.currentX = jailX;
+                    cp.currentY = jailY;
+                    prisonerPieces[jailX, jailY] = cp;
+                    UpdateTileVisuals(jailX, jailY);
+                }
+                else
+                {
+                    cp.currentX = setup.startPos.x;
+                    cp.currentY = setup.startPos.y;
+                    chessPieces[setup.startPos.x, setup.startPos.y] = cp;
+                    cp.SetPosition(GetTileCenter(setup.startPos.x, setup.startPos.y), true);
+                }
+            }
+        }
+
+        SpawnFromSetup(playerPieces);
+        SpawnFromSetup(enemyPieces);
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateChargeList(chessPieces);
+        }
+
+        if (MatchManager.Instance != null)
+        {
+            MatchManager.Instance.maxPiecesPerTeam = Mathf.Max(playerPieces.Count, enemyPieces.Count);
+        }
+    }
+
     private void PositionAllPieces()
     {
         for (int x = 0; x < TILE_WIDTH; x++)
@@ -290,9 +366,12 @@ public class ChessBoardManager : MonoBehaviour
         // Check win condition
         if (matchManager != null)
         {
-            matchManager.CheckWinConditions(cp, x, y);
+            if (TutorialManager.Instance == null || !TutorialManager.Instance.isTutorialActive || TutorialManager.Instance.IsFreePlayStage())
+            {
+                matchManager.CheckWinConditions(cp, x, y);
+            }
         }
-        
+
         if (UIManager.Instance != null)
         {
             UIManager.Instance.UpdateChargeList(chessPieces);
@@ -302,10 +381,21 @@ public class ChessBoardManager : MonoBehaviour
     }
 
     // Choose random move
-    public void ExecuteRandomMove(int team)
+    public void ExecuteRandomMove(int team, bool isFromTimeout = false)
     {
         List<ChessPiece> movablePieces = new List<ChessPiece>();
         Dictionary<ChessPiece, List<Vector2Int>> pieceMoves = new Dictionary<ChessPiece, List<Vector2Int>>();
+
+        if (isFromTimeout && TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
+        {
+            int currentIndex = TutorialManager.Instance.currentStageIndex;
+            TutorialStepData currentStage = TutorialManager.Instance.tutorialStages[currentIndex];
+
+            if (!currentStage.enableTimer)
+            {
+                return;
+            }
+        }
 
         for (int x = 0; x < TILE_WIDTH; x++)
         {
@@ -344,6 +434,11 @@ public class ChessBoardManager : MonoBehaviour
             {
                 turnManager.EndTurn();
             }
+
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.NotifyAutoMoveExecuted();
+            }
         }
         else
         {
@@ -352,6 +447,11 @@ public class ChessBoardManager : MonoBehaviour
             if (turnManager != null)
             {
                 turnManager.EndTurn();
+            }
+
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.NotifyAutoMoveExecuted();
             }
         }
     }

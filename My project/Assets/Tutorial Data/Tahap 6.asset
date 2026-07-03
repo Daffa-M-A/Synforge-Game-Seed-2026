@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 6
+  m_EditorClassIdentifier: 
+  stageTitle: Prisoner
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Makan kedua bidak musuh dan perhatikan bagaimana bidak musuh menjadi
+    prisoner setelah dimakan player.
+  descriptions:
+  - Lawan yang tertangkap akan dibawa ke area tawanan.
+  - Semakin banyak tawanan, semakin panjang rantai prisoner.
+  playerPieces:
+  - pieceType: 5
+    team: 0
+    startPos: {x: 4, y: 3}
+    customChargeOrder: 3
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 4
+    team: 1
+    startPos: {x: 4, y: 5}
+    customChargeOrder: 1
+    isPrisoner: 0
+  - pieceType: 3
+    team: 1
+    startPos: {x: 4, y: 7}
+    customChargeOrder: 2
+    isPrisoner: 0
+  objectives:
+  - type: 0
+    pieceToMove: 5
+    targetPos: {x: 4, y: 5}
+  - type: 0
+    pieceToMove: 5
+    targetPos: {x: 4, y: 7}

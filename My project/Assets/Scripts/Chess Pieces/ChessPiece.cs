@@ -96,6 +96,7 @@ public class ChessPiece : MonoBehaviour
 
         // Block if enemy piece is inside the base row
         if (amIInMyTerritory && isEnemyInTheirBase) return false;
+        else if (isEnemyInTheirBase) return true;
 
         // Enemy in our terriroty
         if (isEnemyInMyTerritory) return true;

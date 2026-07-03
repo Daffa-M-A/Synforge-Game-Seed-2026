@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 8
+  m_EditorClassIdentifier: 
+  stageTitle: Prisoner Ghost
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Bebaskan bidak teman lalu gerakkan bidak dan selesaikan beberapa
+    turn hingga prisoner yang baru bebas bisa digunakan kembali.
+  descriptions:
+  - 'Setelah dibebaskan, prisoner belum langsung aktif.
+
+    Mereka akan kembali
+    ke benteng terlebih dahulu sebelum bergabung lagi ke pertandingan.'
+  - Coba gerakkan karakter lain sampai karakter yang baru bebas bisa digerakkan kembali.
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 3, y: 5}
+    customChargeOrder: 1
+    isPrisoner: 0
+  - pieceType: 4
+    team: 0
+    startPos: {x: 2, y: 0}
+    customChargeOrder: 0
+    isPrisoner: 1
+  enemyPieces: []
+  objectives:
+  - type: 2
+    pieceToMove: 2
+    targetPos: {x: 4, y: 14}
+  - type: 3
+    pieceToMove: 2
+    targetPos: {x: 0, y: 0}
+  - type: 3
+    pieceToMove: 4
+    targetPos: {x: 0, y: 0}

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 3
+  m_EditorClassIdentifier: 
+  stageTitle: Charge Order
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Gerakkan sprinter milik player untuk melihat charge yang diberikan
+    di bagian UI.
+  descriptions:
+  - 'Setiap kali sebuah bidak bergerak, ia menjadi Charge terbaru.
+
+
+    Semakin
+    baru Charge suatu bidak, semakin banyak lawan yang dapat ia tangkap.'
+  - Selalu perhatikan perubahan nomor Charge setelah bergerak.
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 0, y: 0}
+    customChargeOrder: 0
+    isPrisoner: 0
+  - pieceType: 3
+    team: 0
+    startPos: {x: 2, y: 2}
+    customChargeOrder: 1
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 2
+    team: 1
+    startPos: {x: 7, y: 15}
+    customChargeOrder: 2
+    isPrisoner: 0
+  objectives:
+  - type: 3
+    pieceToMove: 2
+    targetPos: {x: 0, y: 7}

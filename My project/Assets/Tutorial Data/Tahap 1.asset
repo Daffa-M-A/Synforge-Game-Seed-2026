@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 1
+  m_EditorClassIdentifier: 
+  stageTitle: Memilih Bidak & Bergerak
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Pilih bidakmu lalu pindahkan ke tile yang disorot.
+  descriptions:
+  - 'Selamat datang di Benteng-Bentengan!
+
+
+    Pada setiap giliran, pilih salah
+    satu bidakmu untuk dimainkan.
+
+
+    Klik bidak yang terdapat di board.'
+  - 'Setelah dipilih, tile yang bisa dikunjungi akan menyala.
+
+
+    Pindahkan bidak
+    ke tile tujuan.'
+  playerPieces:
+  - pieceType: 5
+    team: 0
+    startPos: {x: 4, y: 0}
+    customChargeOrder: 0
+    isPrisoner: 0
+  enemyPieces: []
+  objectives:
+  - type: 0
+    pieceToMove: 5
+    targetPos: {x: 4, y: 7}

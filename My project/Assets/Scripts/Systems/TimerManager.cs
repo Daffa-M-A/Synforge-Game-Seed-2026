@@ -47,7 +47,6 @@ public class TimerManager : MonoBehaviour
 
         if (currentGlobalTimer <= nextGlobalLogTime && currentGlobalTimer > 0)
         {
-            Debug.Log($"[Global Timer] Sisa waktu: {Mathf.CeilToInt(currentGlobalTimer / 60f)} Menit");
             nextGlobalLogTime -= 60f;
         }
 
@@ -68,7 +67,6 @@ public class TimerManager : MonoBehaviour
 
         if (currentPlayerTimer <= nextPlayerLogTime && currentPlayerTimer > 0)
         {
-            Debug.Log($"[Player Timer] Sisa giliran: {Mathf.CeilToInt(currentPlayerTimer)} Detik");
             nextPlayerLogTime -= 10f;
         }
 
@@ -76,11 +74,10 @@ public class TimerManager : MonoBehaviour
         if (currentPlayerTimer <= 0)
         {
             currentPlayerTimer = 0;
-            Debug.Log("[Player Timer] Waktu habis! Sistem memilih pergerakan acak...");
 
             // Random move executed when player timer goes off
             int currentTeam = turnManager.isWhiteTurn ? 0 : 1;
-            boardManager.ExecuteRandomMove(currentTeam);
+            boardManager.ExecuteRandomMove(currentTeam, isFromTimeout: true);
         }
     }
 
@@ -88,7 +85,31 @@ public class TimerManager : MonoBehaviour
     {
         currentPlayerTimer = playerTimerDuration;
         nextPlayerLogTime = currentPlayerTimer - 10f;
-        Debug.Log($"[TimerManager] Giliran berganti! Player Timer direset ke {playerTimerDuration} detik.");
+    }
+
+    public void PauseTimer()
+    {
+        isTimerActive = false;
+    }
+
+    public void ResumeTimer()
+    {
+        isTimerActive = true;
+    }
+
+    public void ResetTimers()
+    {
+        currentGlobalTimer = globalTimerDuration;
+        currentPlayerTimer = playerTimerDuration;
+
+        nextGlobalLogTime = currentGlobalTimer - 60f;
+        nextPlayerLogTime = currentPlayerTimer - 10f;
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateTurnTimerDisplay(currentPlayerTimer);
+            UIManager.Instance.UpdateGlobalTimerDisplay(currentGlobalTimer);
+        }
     }
 
     private void OnDestroy()

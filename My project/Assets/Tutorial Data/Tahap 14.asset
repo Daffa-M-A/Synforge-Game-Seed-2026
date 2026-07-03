@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 14
+  m_EditorClassIdentifier: 
+  stageTitle: Flag Victory
+  skipEnemyTurn: 1
+  enableTimer: 0
+  mainInstruction: Sentuh benteng lawan.
+  descriptions:
+  - Cara menang lainnya adalah berhasil menyentuh benteng lawan.
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 3, y: 13}
+    customChargeOrder: 2
+    isPrisoner: 0
+  enemyPieces: []
+  forceWhiteTurnOnStart: 0
+  objectives:
+  - type: 5
+    pieceToMove: 2
+    targetPos: {x: 3, y: 15}
