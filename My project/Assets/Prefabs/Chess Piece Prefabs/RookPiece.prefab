@@ -122,6 +122,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 2954567754085883002}
     m_Modifications:
     - target: {fileID: -9015112253638031699, guid: 512f314999c39034d990d532f44a797b, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: abd325c1314bb4c4b876aa75d1b76077, type: 2}
+    - target: {fileID: -9015112253638031699, guid: 512f314999c39034d990d532f44a797b, type: 3}
+      propertyPath: 'm_Materials.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a9a1c733252ed5e45b3c331681072f4d, type: 2}
+    - target: {fileID: -9015112253638031699, guid: 512f314999c39034d990d532f44a797b, type: 3}
       propertyPath: 'm_Materials.Array.data[4]'
       value: 
       objectReference: {fileID: 2100000, guid: 32d72590fdb3bcc409f359d8ff875b19, type: 2}
