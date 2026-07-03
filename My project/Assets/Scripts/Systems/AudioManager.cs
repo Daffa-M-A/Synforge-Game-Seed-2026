@@ -85,4 +85,9 @@ public class AudioManager : MonoBehaviour
     }
 
     public void StopAllSFX() { sfxSource.Stop(); }
+
+    public void StopSFX()
+    {
+        sfxSource.Stop();
+    }    
 }

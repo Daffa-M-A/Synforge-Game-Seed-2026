@@ -244,6 +244,8 @@ public class ChessPiece : MonoBehaviour
         // 2. Mulai Animasi Jalan
         if (anim != null) anim.SetBool("isWalking", true);
 
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("RunSFX"); //sfx vaughan
+
         float distance = Vector3.Distance(startPos, endPos);
         float duration = (speed <= 0) ? 0.5f : distance / speed;
         float elapsed = 0;
@@ -256,6 +258,8 @@ public class ChessPiece : MonoBehaviour
         }
 
         transform.position = endPos;
+
+        if (AudioManager.Instance != null) AudioManager.Instance.StopSFX();
 
         // 3. Matikan Animasi Jalan
         if (anim != null) anim.SetBool("isWalking", false);
