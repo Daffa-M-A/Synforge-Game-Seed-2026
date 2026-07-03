@@ -29,10 +29,13 @@ public class ChessPiece : MonoBehaviour
     public bool isJailed = false;
     public int rechargeCountdown = 0;
     public bool isGhost = false;
+    protected Animator anim;
 
     private void Awake()
     {
         desiredScale = transform.localScale;
+        // Mencari animator pada objek FBX (child)
+        anim = GetComponentInChildren<Animator>(); 
     }
 
     private void Update()
@@ -223,69 +226,47 @@ public class ChessPiece : MonoBehaviour
         StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed));
     }
 
+
     private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed)
     {
         isAnimating = true;
 
-        transform.position = startPos;
-        desiredPosition = endPos;
+        // 1. Tentukan arah dan rotasi tujuan
+        Vector3 moveDirection = (endPos - startPos).normalized;
+        moveDirection.y = 0; // Kunci sumbu Y agar tidak nunduk/tengadah
 
-        Vector3 direction = (endPos - startPos).normalized;
-        direction.y = 0; 
-
-        Quaternion startRot = transform.rotation;
-        Quaternion targetRot = startRot;
-
-        if (direction != Vector3.zero)
+        if (moveDirection != Vector3.zero)
         {
-            targetRot = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.LookRotation(moveDirection);
         }
 
-        if (delay > 0)
-        {
-            float delayElapsed = 0f;
-            while (delayElapsed < delay)
-            {
-                // Turn to target tile
-                transform.rotation = Quaternion.Slerp(startRot, targetRot, delayElapsed / delay);
-                delayElapsed += Time.deltaTime;
-                yield return null;
-            }
-            transform.rotation = targetRot;
-        }
+        // 2. Mulai Animasi Jalan
+        if (anim != null) anim.SetBool("isWalking", true);
 
         float distance = Vector3.Distance(startPos, endPos);
-        float dynamicDuration = distance / speed;
-        if (dynamicDuration <= 0f) dynamicDuration = 0.01f;
+        float duration = (speed <= 0) ? 0.5f : distance / speed;
+        float elapsed = 0;
 
-        float elapsedTime = 0f;
-        while (elapsedTime < dynamicDuration)
+        while (elapsed < duration)
         {
-            transform.position = Vector3.Lerp(startPos, endPos, elapsedTime / dynamicDuration);
-            transform.rotation = targetRot; 
-            elapsedTime += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            elapsed += Time.deltaTime;
             yield return null;
         }
 
         transform.position = endPos;
 
-        // Look front after movement
-        Vector3 idleDirection = (team == 0) ? Vector3.forward : Vector3.back;
-        Quaternion idleRot = Quaternion.LookRotation(idleDirection);
+        // 3. Matikan Animasi Jalan
+        if (anim != null) anim.SetBool("isWalking", false);
 
-        float returnRotElapsed = 0f;
-        float returnRotDuration = 0.15f;
+        // 4. Reset Rotasi agar menghadap tim lawan kembali
+        // Tim 0 (White) hadap depan, Tim 1 (Black) hadap belakang
+        Vector3 finalFacing = (team == 0) ? Vector3.forward : Vector3.back;
+        transform.rotation = Quaternion.LookRotation(finalFacing);
 
-        while (returnRotElapsed < returnRotDuration)
-        {
-            transform.rotation = Quaternion.Slerp(targetRot, idleRot, returnRotElapsed / returnRotDuration);
-            returnRotElapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.rotation = idleRot;
         isAnimating = false;
     }
+
 
     // Animtaion for ghost after released from jail
     public void AnimateGhostRelease(Vector3 startPos, Vector3 rallyPos, Vector3 finalPos, float speed = 10f)
