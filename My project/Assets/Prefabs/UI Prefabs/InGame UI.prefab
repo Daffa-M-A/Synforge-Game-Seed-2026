@@ -3874,7 +3874,7 @@ GameObject:
   - component: {fileID: 1913509317576667484}
   - component: {fileID: 368144630125368224}
   m_Layer: 5
-  m_Name: Win B (1)
+  m_Name: Draw
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
