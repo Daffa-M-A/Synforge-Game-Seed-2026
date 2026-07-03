@@ -43,10 +43,13 @@ public class ChessBoardManager : MonoBehaviour
     private void Start()
     {
         if (turnManager != null) turnManager.OnTurnChanged += ProcessTurnLogic;
-        
+
         if (UIManager.Instance != null)
         {
             UIManager.Instance.UpdateChargeList(chessPieces);
+
+            int maxPieces = (matchManager != null) ? matchManager.maxPiecesPerTeam : 8;
+            UIManager.Instance.UpdateTeamStats(maxPieces, whiteJailCount, blackJailCount);   // <-- baru
         }
     }
 
@@ -221,6 +224,11 @@ public class ChessBoardManager : MonoBehaviour
         {
             MatchManager.Instance.maxPiecesPerTeam = Mathf.Max(playerPieces.Count, enemyPieces.Count);
         }
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateTeamStats(MatchManager.Instance.maxPiecesPerTeam, whiteJailCount, blackJailCount);
+        }
     }
 
     private void PositionAllPieces()
@@ -346,6 +354,12 @@ public class ChessBoardManager : MonoBehaviour
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
                 UpdateTileVisuals(jailX, jailY);
+
+                if (UIManager.Instance != null)
+                {
+                    int maxPieces = (MatchManager.Instance != null) ? MatchManager.Instance.maxPiecesPerTeam : 8;
+                    UIManager.Instance.UpdateTeamStats(maxPieces, whiteJailCount, blackJailCount);
+                }
             }
         }
 
@@ -425,8 +439,6 @@ public class ChessBoardManager : MonoBehaviour
             // Choose tile
             Vector2Int randomDest = availableMoves[Random.Range(0, availableMoves.Count)];
 
-            Debug.Log($"[Auto-Move] Memindahkan {randomPiece.type} dari ({randomPiece.currentX}, {randomPiece.currentY}) ke ({randomDest.x}, {randomDest.y})");
-
             MoveTo(randomPiece, randomDest.x, randomDest.y, availableMoves);
 
             // Change turn after random move executed
@@ -443,7 +455,6 @@ public class ChessBoardManager : MonoBehaviour
         else
         {
             // If there is no available move, skip the turn completely
-            Debug.Log("Skip turn");
             if (turnManager != null)
             {
                 turnManager.EndTurn();

@@ -54,8 +54,6 @@ public class MatchManager : MonoBehaviour
     {
         if (boardManager.isGameOver) return;
 
-        Debug.Log("Tidebreaker");
-
         int poinPutih = boardManager.blackJailCount;
         int poinHitam = boardManager.whiteJailCount;
 
