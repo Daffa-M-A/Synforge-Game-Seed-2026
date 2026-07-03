@@ -372,7 +372,7 @@ public class ChessBoardManager : MonoBehaviour
         cp.currentX = x;
         cp.currentY = y;
 
-        cp.MoveWithAnimation(startPos, endPos, 0.15f, 10f);
+        cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
 
         UpdateTileVisuals(x, y);
         UpdateTileVisuals(previousPosition.x, previousPosition.y);
