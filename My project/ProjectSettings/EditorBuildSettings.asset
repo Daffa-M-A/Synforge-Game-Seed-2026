@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Prefabs/Scenes/Test 1_UI Integration.unity
     guid: 72470af2dd8a65241b931b28937e584a
   - enabled: 1
+    path: Assets/Prefabs/Scenes/Test 1_UI Integration (Bahtiar).unity
+    guid: 797a465139d45e54ea542fc2a04d13bc
+  - enabled: 1
     path: Assets/Prefabs/Scenes/Tutorial Scene.unity
     guid: 737fc8aa5f2c35e4db5c6d0690c8a09c
   m_configObjects:
