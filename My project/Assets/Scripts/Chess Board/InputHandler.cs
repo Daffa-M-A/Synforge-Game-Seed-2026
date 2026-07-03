@@ -95,6 +95,7 @@ public class InputHandler : MonoBehaviour
                 if (isPieceWhite != turnManager.isWhiteTurn) return;
 
                 currentlyDragging = hitPiece;
+                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("PickUpPionSFX"); //sfx vaughan
                 availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
                 if (AreHighlightsEnabled())
                 {
@@ -123,7 +124,9 @@ public class InputHandler : MonoBehaviour
                     bool validMove = isMoveAllowed && boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
 
                     if (validMove)
+                    
                     {
+                        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("DropPion");
                         turnManager.EndTurn();
 
                         if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)

@@ -52,9 +52,15 @@ public class AudioManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Auto-Play BGM berdasarkan nama scene
-        if (scene.name == "Main Menu") PlayBGM(mainMenuBGM);
-        else if (scene.name == "Test_3D Integration") PlayBGM(gameplayBGM);
+        // Kita cek apakah nama scene mengandung kata "Main Menu" agar lebih fleksibel
+        if (scene.name.Contains("Main Menu")) 
+        {
+            PlayBGM(mainMenuBGM);
+        }
+        else if (scene.name == "Test_3D Integration") 
+        {
+            PlayBGM(gameplayBGM);
+        }
     }
 
     public void PlayBGM(AudioClip clip)
