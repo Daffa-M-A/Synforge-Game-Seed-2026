@@ -311,6 +311,7 @@ public class ChessBoardManager : MonoBehaviour
         if (wasInBase && isMovingOut)
         {
             UpdateOrderCharge(cp);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("ReChargeSFX");            
         }
 
         if (prisonerPieces[x, y] != null)
@@ -334,6 +335,24 @@ public class ChessBoardManager : MonoBehaviour
             else
             {
                 ocp.isJailed = true;
+
+                if (AudioManager.Instance != null)
+                {
+                    // Logika Sacrifice: Kita di wilayah kita, musuh di wilayah mereka, 
+                    // tapi rank kita lebih kecil (lemah) tapi bisa makan.
+                    bool amIInMyTerritory = (cp.team == 0 && cp.currentY <= 7) || (cp.team == 1 && cp.currentY >= 8);
+                    bool isEnemyInTheirTerritory = (cp.team == 0 && ocp.currentY >= 8) || (cp.team == 1 && ocp.currentY <= 7);
+
+                    if (amIInMyTerritory && isEnemyInTheirTerritory && cp.orderCharge < ocp.orderCharge)
+                    {
+                        AudioManager.Instance.PlaySFX("NangkapSacrificePionSFX");
+                    }
+                    else
+                    {
+                        AudioManager.Instance.PlaySFX("NangkapPionSFX");
+                    }
+                }
+
                 int jailX = 3;
                 int jailY;
 
@@ -492,6 +511,12 @@ public class ChessBoardManager : MonoBehaviour
                 }
             }
         }
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX("RescuePionSFX");
+            AudioManager.Instance.PlaySFX("ChainBreak1SFX_Yay");
+        }        
 
         foreach (ChessPiece piece in freedPieces)
         {
