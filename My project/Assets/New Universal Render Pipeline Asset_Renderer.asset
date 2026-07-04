@@ -17,17 +17,17 @@ MonoBehaviour:
     passTag: GreenHighlightFeature
     Event: 300
     filterSettings:
-      RenderQueueType: 0
+      RenderQueueType: 1
       LayerMask:
         serializedVersion: 2
         m_Bits: 256
       PassNames: []
-    overrideMaterial: {fileID: 2100000, guid: 53b45daba968eed47b400aae40bef375, type: 2}
+    overrideMaterial: {fileID: 2100000, guid: c8c9723295557144f9cb2ede1e8cab5b, type: 2}
     overrideMaterialPassIndex: 0
     overrideShader: {fileID: 0}
     overrideShaderPassIndex: 0
     overrideMode: 1
-    overrideDepthState: 1
+    overrideDepthState: 0
     depthCompareFunction: 8
     enableWrite: 1
     stencilSettings:
