@@ -17,13 +17,8 @@ public class TurnManager : MonoBehaviour
     public void EndTurn()
     {
         isWhiteTurn = !isWhiteTurn;
-        currentTurnCount++;
 
-        if (AudioManager.Instance != null)
-        {
-            // Jika dipicu secara normal (bukan karena timer habis)
-            AudioManager.Instance.PlaySFX("TurnChangeNormalSFX");
-        }
+        currentTurnCount++;
 
         OnTurnChanged?.Invoke(isWhiteTurn);
     }

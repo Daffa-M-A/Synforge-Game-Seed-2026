@@ -391,9 +391,6 @@ MonoBehaviour:
   chargeLogPrefab: {fileID: 0}
   whitePieceIcons: []
   blackPieceIcons: []
-  winPanel: {fileID: 0}
-  losePanel: {fileID: 0}
-  drawPanel: {fileID: 0}
 --- !u!1 &90612504
 GameObject:
   m_ObjectHideFlags: 0
@@ -3324,7 +3321,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Test_3D Intergration
+          m_StringArgument: Test 1_UI Integration (Bahtiar)
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1103356350
@@ -3502,63 +3499,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1171280849}
   m_CullTransparentMesh: 1
---- !u!1001 &1190923992
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.81703746
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 7.209064
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 9.28504
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3321380558671233334, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6653051074847277711, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
-      propertyPath: m_Name
-      value: AudioManager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: b8af9f7253f3caa42a11f9d03829dd40, type: 3}
 --- !u!1 &1203115091
 GameObject:
   m_ObjectHideFlags: 0
@@ -6385,4 +6325,3 @@ SceneRoots:
   - {fileID: 431534680}
   - {fileID: 76019587}
   - {fileID: 1092095493}
-  - {fileID: 1190923992}
