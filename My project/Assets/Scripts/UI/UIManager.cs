@@ -225,6 +225,16 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene("Main Menu");
     }
 
+    public void FreezeTime() 
+    {
+        Time.timeScale = 0.0f; 
+    }
+
+    public void ResumeTime()
+    {
+        Time.timeScale = 1.0f;
+    }
+
     public void ExitGame()
     {
         Application.Quit();

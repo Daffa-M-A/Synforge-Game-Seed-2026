@@ -391,6 +391,9 @@ MonoBehaviour:
   chargeLogPrefab: {fileID: 0}
   whitePieceIcons: []
   blackPieceIcons: []
+  winPanel: {fileID: 0}
+  losePanel: {fileID: 0}
+  drawPanel: {fileID: 0}
 --- !u!1 &90612504
 GameObject:
   m_ObjectHideFlags: 0
