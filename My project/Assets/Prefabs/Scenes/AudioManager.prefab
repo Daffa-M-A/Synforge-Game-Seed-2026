@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6653051074847277711
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3321380558671233334}
+  - component: {fileID: 3765654905230159570}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3321380558671233334
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6653051074847277711}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.81703746, y: 7.209064, z: 9.28504}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3765654905230159570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6653051074847277711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 922e63ff90b63804486813fa909a2b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  musicVolume: 0.5
+  sfxVolume: 0.7
+  mainMenuBGM: {fileID: 8300000, guid: a93be9354a4c8a940b7560b9baf43d69, type: 3}
+  gameplayBGM: {fileID: 8300000, guid: ce9d6465a1af8ba40abbbb77e1a86d5b, type: 3}
+  sfxLibrary:
+  - name: Button
+    clip: {fileID: 8300000, guid: ba007e6677848de49b89cd9a9939df8c, type: 3}
+  - name: PickUpPionSFX
+    clip: {fileID: 8300000, guid: cde6d84ff8a86ef43b8cfb7f01625bda, type: 3}
+  - name: DropPion
+    clip: {fileID: 8300000, guid: 9af25a59c52198b4ba7806d493d930a8, type: 3}
+  - name: RunSFX
+    clip: {fileID: 8300000, guid: 0e303d476448b0b4c8e7ea74a7b1f516, type: 3}
+  - name: TimetickingSFX
+    clip: {fileID: 8300000, guid: 084feccfdd2954841bf83dce287d31d3, type: 3}
+  - name: GlobalTimerEndingSFX
+    clip: {fileID: 8300000, guid: e4aea39b914321746af9d79dd99beb74, type: 3}
+  - name: TurnTimerEndingSFX
+    clip: {fileID: 8300000, guid: f6460ed932c1b864cb0c44824e44b3f2, type: 3}
+  - name: TurnChangeNormalSFX
+    clip: {fileID: 8300000, guid: 65060f1f23a62134e9c88f14aea4a6bc, type: 3}
+  - name: TurnChangeForcedSFX
+    clip: {fileID: 8300000, guid: 72fe026e227e1bc47928b06a29483525, type: 3}

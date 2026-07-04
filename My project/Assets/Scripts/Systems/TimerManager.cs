@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class TimerManager : MonoBehaviour
 {
+
+    private bool globalEndingTriggered = false;
+    private int lastLoggedSecond = -1;
+
     [Header("Dependencies")]
     public ChessBoardManager boardManager;
     public TurnManager turnManager;
@@ -30,6 +34,8 @@ public class TimerManager : MonoBehaviour
         isTimerActive = true;
 
         if (turnManager != null) turnManager.OnTurnChanged += ResetPlayerTimer;
+
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("TimetickingSFX"); //sfx
     }
 
     private void Update()
@@ -38,6 +44,13 @@ public class TimerManager : MonoBehaviour
 
         // Logic for global timer
         currentGlobalTimer -= Time.deltaTime;
+
+        // Global Timer Ending (1 Menit Terakhir)
+        if (currentGlobalTimer <= 60f && currentGlobalTimer > 0 && !globalEndingTriggered)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("GlobalTimerEndingSFX");
+            globalEndingTriggered = true; // Tambahkan variabel bool ini di atas
+        }        
 
         if (UIManager.Instance != null)
         {
@@ -65,6 +78,14 @@ public class TimerManager : MonoBehaviour
         // Logic for player timer
         currentPlayerTimer -= Time.deltaTime;
 
+        // Turn Timer Ending (10 Detik Terakhir)
+        int secondsLeft = Mathf.CeilToInt(currentPlayerTimer);
+        if (secondsLeft <= 10 && secondsLeft > 0 && secondsLeft != lastLoggedSecond)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("TurnTimerEndingSFX");
+            lastLoggedSecond = secondsLeft; // Tambahkan variabel int ini di atas
+        }        
+
         if (currentPlayerTimer <= nextPlayerLogTime && currentPlayerTimer > 0)
         {
             nextPlayerLogTime -= 10f;
@@ -77,6 +98,9 @@ public class TimerManager : MonoBehaviour
 
             // Random move executed when player timer goes off
             int currentTeam = turnManager.isWhiteTurn ? 0 : 1;
+
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("TurnChangeForcedSFX");
+
             boardManager.ExecuteRandomMove(currentTeam, isFromTimeout: true);
         }
     }
