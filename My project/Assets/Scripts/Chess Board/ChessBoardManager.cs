@@ -563,8 +563,11 @@ public class ChessBoardManager : MonoBehaviour
 
         if (AudioManager.Instance != null)
         {
+            // Suara rantai putus segera diputar
             AudioManager.Instance.PlaySFX("RescuePionSFX");
-            AudioManager.Instance.PlaySFX("ChainBreak1SFX_Yay");
+            
+            // Suara sorak tawanan diberikan jeda sedikit agar terdengar lebih jelas
+            StartCoroutine(PlayDelayedSFX("ChainBreak1SFX_Yay", 0.15f));
         }
 
         GameVfxManager vfxManager = GameVfxManager.Instance;
@@ -645,6 +648,13 @@ public class ChessBoardManager : MonoBehaviour
             int maxPieces = (MatchManager.Instance != null) ? MatchManager.Instance.maxPiecesPerTeam : 8;
             UIManager.Instance.UpdateTeamStats(maxPieces, whiteJailCount, blackJailCount);
         }
+    }
+
+    // Helper untuk memberikan jeda antar suara agar tidak distorsi
+    private IEnumerator PlayDelayedSFX(string sfxName, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(sfxName);
     }
 
     private const int JAIL_COLUMN_X = 3;

@@ -17,7 +17,8 @@ public class AudioManager : MonoBehaviour
     [Range(0, 1)] public float sfxVolume = 0.7f;
     
     private AudioSource musicSource;
-    private AudioSource sfxSource;
+    private AudioSource sfxSource;      // Khusus suara instan (OneShot)
+    private AudioSource loopSfxSource;  // Khusus suara berulang (Jalan/Run)
 
     [Header("BGM Clips")]
     public AudioClip mainMenuBGM;
@@ -33,12 +34,16 @@ public class AudioManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
-            // Setup AudioSources secara otomatis
+            // Inisialisasi semua AudioSource di dalam blok Singleton yang aman
             musicSource = gameObject.AddComponent<AudioSource>();
             sfxSource = gameObject.AddComponent<AudioSource>();
-            
+            loopSfxSource = gameObject.AddComponent<AudioSource>(); // Tambahkan di sini
+
             musicSource.loop = true;
             musicSource.playOnAwake = false;
+
+            loopSfxSource.loop = true; // Set loop source agar selalu melingkar
+            loopSfxSource.playOnAwake = false;
         }
         else
         {
@@ -47,20 +52,63 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    // ==========================================
+    // LOGIKA SFX LOOPING (Jalan, Mesin, dll)
+    // ==========================================
+    public void PlayLoopSFX(string sfxName)
+    {
+        SoundEffect sfx = sfxLibrary.Find(s => s.name == sfxName);
+        if (sfx.clip == null) return;
+        
+        // Jangan putar ulang jika sfx yang sama sedang berjalan
+        if (loopSfxSource.isPlaying && loopSfxSource.clip == sfx.clip) return;
+
+        loopSfxSource.clip = sfx.clip;
+        loopSfxSource.volume = sfxVolume;
+        loopSfxSource.Play();
+    }
+    
+    public void StopLoopSFX()
+    {
+        if (loopSfxSource.isPlaying)
+            loopSfxSource.Stop();
+    }
+
+    // ==========================================
+    // LOGIKA SFX INSTAN (Tangkap, Klik, Menang)
+    // ==========================================
+    public void PlaySFX(string sfxName)
+    {
+        SoundEffect sfx = sfxLibrary.Find(s => s.name == sfxName);
+        if (sfx.clip != null)
+        {
+            // PlayOneShot tidak akan terpotong jika sfxSource.Stop() tidak dipanggil
+            sfxSource.PlayOneShot(sfx.clip, sfxVolume);
+        }
+        else
+        {
+            Debug.LogWarning("SFX tidak ditemukan: " + sfxName);
+        }
+    }
+
+    // JANGAN GUNAKAN INI UNTUK MENGHENTIKAN SUARA JALAN
+    // Fungsi ini akan dikosongkan agar tidak memutus suara penangkapan pion
+    public void StopSFX()
+    {
+        // Sengaja dikosongkan. 
+        // Pemanggilan StopSFX() dari script lama tidak akan lagi mematikan semua suara.
+    }
+
+    // ==========================================
+    // LOGIKA BGM & SCENE
+    // ==========================================
     private void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
     private void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Kita cek apakah nama scene mengandung kata "Main Menu" agar lebih fleksibel
-        if (scene.name.Contains("Main Menu")) 
-        {
-            PlayBGM(mainMenuBGM);
-        }
-        else if (scene.name == "Test_3D Integration") 
-        {
-            PlayBGM(gameplayBGM);
-        }
+        if (scene.name.Contains("Main Menu")) PlayBGM(mainMenuBGM);
+        else if (scene.name == "Test_3D Integration") PlayBGM(gameplayBGM);
     }
 
     public void PlayBGM(AudioClip clip)
@@ -70,24 +118,4 @@ public class AudioManager : MonoBehaviour
         musicSource.volume = musicVolume;
         musicSource.Play();
     }
-
-    public void PlaySFX(string sfxName)
-    {
-        SoundEffect sfx = sfxLibrary.Find(s => s.name == sfxName);
-        if (sfx.clip != null)
-        {
-            sfxSource.PlayOneShot(sfx.clip, sfxVolume);
-        }
-        else
-        {
-            Debug.LogWarning("SFX tidak ditemukan: " + sfxName);
-        }
-    }
-
-    public void StopAllSFX() { sfxSource.Stop(); }
-
-    public void StopSFX()
-    {
-        sfxSource.Stop();
-    }    
 }

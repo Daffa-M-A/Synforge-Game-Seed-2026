@@ -393,7 +393,7 @@ public class ChessPiece : MonoBehaviour
         }
 
         SetAnimatorWalking(true);
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("RunSFX");
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayLoopSFX("RunSFX");
 
         if (flashColor.HasValue)
         {
@@ -429,7 +429,7 @@ public class ChessPiece : MonoBehaviour
 
         transform.position = end;
 
-        if (AudioManager.Instance != null) AudioManager.Instance.StopSFX();
+        if (AudioManager.Instance != null) AudioManager.Instance.StopLoopSFX();
         SetAnimatorWalking(false);
 
         if (flashColor.HasValue)
