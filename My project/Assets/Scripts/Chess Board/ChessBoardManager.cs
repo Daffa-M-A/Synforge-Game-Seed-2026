@@ -298,9 +298,9 @@ public class ChessBoardManager : MonoBehaviour
         }
     }
 
-    public bool MoveTo(ChessPiece cp, int x, int y, List<Vector2Int> availableMove)
-    {
-        if (!ContainsValidMove(availableMove, new Vector2Int(x, y))) return false;
+		public bool MoveTo(ChessPiece cp, int x, int y, List<Vector2Int> availableMove)
+			{
+				if (!ContainsValidMove(availableMove, new Vector2Int(x, y))) return false;
 
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
 
@@ -373,6 +373,10 @@ public class ChessBoardManager : MonoBehaviour
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
                 UpdateTileVisuals(jailX, jailY);
+				
+				// TRIGGER SHAKE: Hanya saat bidak benar-benar menangkap musuh
+                CameraController cam = Camera.main.GetComponent<CameraController>();
+                if (cam != null) cam.TriggerShake();
 
                 if (UIManager.Instance != null)
                 {

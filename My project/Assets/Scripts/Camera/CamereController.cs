@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering; //untuk mengakses volume
 
 public class CameraController : MonoBehaviour
 {
@@ -7,7 +8,17 @@ public class CameraController : MonoBehaviour
 
     [Header("Orbit Settings")]
     public Vector3 pivotPoint = Vector3.zero;
+	
+    [Header("Distance Settings")]
     public float distance = 18f;
+    private float targetDistance;
+    public float zoomSmoothness = 10f;
+	
+	[Header("Shake Settings")]
+    public float defaultShakeDuration = 0.2f;
+    public float defaultShakeIntensity = 0.3f;
+    private Vector3 shakeOffset;
+	
     public float transitionSpeed = 4f;
     public float orbitSpeed = 5f;
 	
@@ -30,11 +41,18 @@ public class CameraController : MonoBehaviour
 
     private float currentYaw;
     private float currentPitch;
+	
+	[Header("Post Processing")]
+    public Volume impactVolume;
 
     private void Start()
     {
+		targetDistance = distance;
         targetYaw = whiteYaw;
         targetPitch = defaultPitch;
+		
+		// Memastikan efek blur mati saat awal permainan
+        if (impactVolume != null) impactVolume.weight = 0f;
 
         currentYaw = targetYaw;
         currentPitch = targetPitch;
@@ -57,24 +75,56 @@ public class CameraController : MonoBehaviour
     {
         HandleOrbit();
 		
-		// Logika Zoom menggunakan Scroll Wheel
+		// Logika Zoom Smooth
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         if (scrollInput != 0)
         {
-            distance -= scrollInput * zoomSpeed;
-            distance = Mathf.Clamp(distance, minDistance, maxDistance);
+            targetDistance -= scrollInput * zoomSpeed;
+            targetDistance = Mathf.Clamp(targetDistance, minDistance, maxDistance);
         }
+        distance = Mathf.Lerp(distance, targetDistance, Time.deltaTime * zoomSmoothness);
 
         currentYaw = Mathf.LerpAngle(currentYaw, targetYaw, Time.deltaTime * transitionSpeed);
         currentPitch = Mathf.Lerp(currentPitch, targetPitch, Time.deltaTime * transitionSpeed);
 
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
 
-        Vector3 position = pivotPoint - (rotation * Vector3.forward * distance);
-
-        transform.position = position;
+		Vector3 position = pivotPoint - (rotation * Vector3.forward * distance);
+        // Tambahkan shakeOffset ke posisi akhir
+        transform.position = position + shakeOffset;
         transform.rotation = rotation;
     }
+	
+	//Trigger efek shake
+	public void TriggerShake(float intensityMultiplier = 1f)
+		{
+			StopAllCoroutines();
+			StartCoroutine(ShakeCoroutine(defaultShakeDuration, defaultShakeIntensity * intensityMultiplier));
+		}
+
+	private System.Collections.IEnumerator ShakeCoroutine(float duration, float magnitude)
+		{
+			float elapsed = 0f;
+			while (elapsed < duration)
+			{
+				float x = Random.Range(-1f, 1f) * magnitude;
+				float y = Random.Range(-1f, 1f) * magnitude;
+
+				shakeOffset = new Vector3(x, y, 0);
+
+				// LOGIKA BLUR: Naikkan weight saat mulai, turunkan secara linear
+				if (impactVolume != null)
+				{
+					impactVolume.weight = Mathf.Lerp(magnitude, 0, elapsed / duration);
+				}
+
+				elapsed += Time.deltaTime;
+				yield return null;
+			}
+			
+			shakeOffset = Vector3.zero;
+			if (impactVolume != null) impactVolume.weight = 0f;
+		}
 
     // Handle camera movement
     private void HandleOrbit()

@@ -961,6 +961,55 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7563530438020467829, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
   m_PrefabInstance: {fileID: 1051820983}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1157220955
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1157220957}
+  - component: {fileID: 1157220956}
+  m_Layer: 0
+  m_Name: ImpactVolume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1157220956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157220955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 0
+  sharedProfile: {fileID: 11400000, guid: 33d17781118759d4cb1c7f2950d5110c, type: 2}
+--- !u!4 &1157220957
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157220955}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -6.987526, y: -16.320814, z: -8.138603}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1277187370
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1139,7 +1188,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -1175,13 +1224,20 @@ MonoBehaviour:
   turnManager: {fileID: 6028421048001755282}
   pivotPoint: {x: 0, y: -3, z: 0}
   distance: 16
+  zoomSmoothness: 10
+  defaultShakeDuration: 0.2
+  defaultShakeIntensity: 0.3
   transitionSpeed: 3.5
   orbitSpeed: 5
+  zoomSpeed: 10
+  minDistance: 5
+  maxDistance: 30
   whiteYaw: 0
   blackYaw: 180
   defaultPitch: 45
   minPitch: 20
   maxPitch: 85
+  impactVolume: {fileID: 1157220956}
 --- !u!1 &1517402679 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 407248328707974607, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
@@ -1844,3 +1900,4 @@ SceneRoots:
   - {fileID: 1750685698}
   - {fileID: 561880219}
   - {fileID: 1561407087}
+  - {fileID: 1157220957}
