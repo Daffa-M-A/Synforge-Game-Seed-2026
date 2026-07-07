@@ -88,64 +88,81 @@ public class InputHandler : MonoBehaviour
 
                 if (hitPosition == -Vector2Int.one) return;
 
-                ChessPiece hitPiece = boardManager.chessPieces[hitPosition.x, hitPosition.y];
+				ChessPiece hitPiece = boardManager.chessPieces[hitPosition.x, hitPosition.y];
                 if (hitPiece == null || hitPiece.isGhost || hitPiece.isJailed) return;
 
-                bool isPieceWhite = hitPiece.team == 0;
-                if (isPieceWhite != turnManager.isWhiteTurn) return;
-
-                currentlyDragging = hitPiece;
-                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("PickUpPionSFX"); //sfx vaughan
-                availableMove = currentlyDragging.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
+                // Hitung gerakan yang tersedia untuk bidak yang diklik (kawan maupun lawan)
+                availableMove = hitPiece.GetAvailableMoves(ref boardManager.chessPieces, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
+                
+                // Tampilkan highlight jika fitur highlight aktif
                 if (AreHighlightsEnabled())
                 {
-                    generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, currentlyDragging.team);
+                    generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, hitPiece.team);
                 }
 
-                if (UIManager.Instance != null) UIManager.Instance.ShowPieceInfo(currentlyDragging);
+                // Tampilkan info bidak di UI
+                if (UIManager.Instance != null) UIManager.Instance.ShowPieceInfo(hitPiece);
+
+                // LOGIKA INTERAKSI: Hanya izinkan Dragging jika itu bidak kita
+                bool isPieceWhite = hitPiece.team == 0;
+                if (isPieceWhite == turnManager.isWhiteTurn) 
+                {
+                    currentlyDragging = hitPiece;
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("PickUpPionSFX");
+                }
             }
         }
 
-        if (Input.GetMouseButtonUp(0) && currentlyDragging != null)
+        if (Input.GetMouseButtonUp(0))
         {
-            if (isRaycastHit && info.transform != null)
+            // LOGIKA PERGERAKAN: Hanya dijalankan jika kita sedang men-drag bidak (Bidak Kawan)
+            if (currentlyDragging != null)
             {
-                Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-                if (hitPosition != -Vector2Int.one)
+                if (isRaycastHit && info.transform != null)
                 {
-                    Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
-
-                    bool isMoveAllowed = true;
-                    if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
-                    {
-                        isMoveAllowed = TutorialManager.Instance.ValidateMove(currentlyDragging, hitPosition);
-                    }
-
-                    bool validMove = isMoveAllowed && boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
-
-                    if (validMove)
+                    Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
                     
+                    if (hitPosition != -Vector2Int.one)
                     {
-                        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("DropPion");
-                        turnManager.EndTurn();
+                        Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
 
+                        bool isMoveAllowed = true;
                         if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
                         {
-                            if (TutorialManager.Instance.ShouldSkipEnemyTurn())
+                            isMoveAllowed = TutorialManager.Instance.ValidateMove(currentlyDragging, hitPosition);
+                        }
+
+                        bool validMove = isMoveAllowed && boardManager.MoveTo(currentlyDragging, hitPosition.x, hitPosition.y, availableMove);
+
+                        if (validMove)
+                        {
+                            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("DropPion");
+                            turnManager.EndTurn();
+
+                            if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive)
                             {
-                                turnManager.EndTurn();
+                                if (TutorialManager.Instance.ShouldSkipEnemyTurn())
+                                {
+                                    turnManager.EndTurn();
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                        else
+                        {
+                            currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                        }
                     }
                 }
-            }
-            else currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
+                else 
+                {
+                    // Kembalikan bidak ke posisi asal jika dilepas di luar area valid
+                    currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
+                }
 
-            currentlyDragging = null;
+                currentlyDragging = null;
+            }
+
+            // LOGIKA PEMBERSIHAN VISUAL: Dijalankan untuk semua bidak (Kawan maupun Lawan)
             generateBoard.RemoveHighlightTiles(availableMove);
             availableMove.Clear();
 
