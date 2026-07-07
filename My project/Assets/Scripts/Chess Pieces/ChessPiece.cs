@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public enum ChessPieceType
 {
@@ -35,11 +34,19 @@ public class ChessPiece : MonoBehaviour
     public bool isGhost = false;
     protected Animator anim;
 
+    private Coroutine colorFlashRoutine;
+    private Renderer[] pieceRenderers;
+    private MaterialPropertyBlock propertyBlock;
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly Color SacrificeApproachFlash = new Color(1f, 0.92f, 0.15f);
+    private static readonly Color SacrificePrisonFlash = new Color(1f, 0.18f, 0.18f);
+
     private void Awake()
     {
         desiredScale = transform.localScale;
-        // Mencari animator pada objek FBX (child)
-        anim = GetComponentInChildren<Animator>(); 
+        anim = GetComponentInChildren<Animator>();
+        propertyBlock = new MaterialPropertyBlock();
     }
 
     private const float PositionSnapThreshold = 0.001f;
@@ -287,12 +294,12 @@ public class ChessPiece : MonoBehaviour
         SetAnimatorPrisoner(true);
     }
 
-    public void AnimateCaptureToPrison(Vector3 startPos, Vector3 endPos, float speed = 8f)
+    public void AnimateCaptureToPrison(Vector3 startPos, Vector3 endPos, float speed = 8f, bool sacrificeFlash = false)
     {
-        StartCoroutine(CaptureToPrisonCoroutine(startPos, endPos, speed));
+        StartCoroutine(CaptureToPrisonCoroutine(startPos, endPos, speed, sacrificeFlash));
     }
 
-    private IEnumerator CaptureToPrisonCoroutine(Vector3 startPos, Vector3 endPos, float speed)
+    private IEnumerator CaptureToPrisonCoroutine(Vector3 startPos, Vector3 endPos, float speed, bool sacrificeFlash)
     {
         isAnimating = true;
         SetAnimatorPrisoner(false);
@@ -301,24 +308,25 @@ public class ChessPiece : MonoBehaviour
         transform.position = startPos;
         desiredPosition = endPos;
 
-        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed));
+        Color? flashColor = sacrificeFlash ? SacrificePrisonFlash : (Color?)null;
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
         transform.position = endPos;
         desiredPosition = endPos;
         transform.rotation = Quaternion.LookRotation(PrisonerFacing);
         SetAnimatorWalking(false);
         SetAnimatorPrisoner(true);
+        StopColorFlash();
 
         isAnimating = false;
     }
 
-    // Animation movement
-    public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f)
+    public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f, bool sacrificeFlash = false)
     {
-        StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed));
+        StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed, sacrificeFlash));
     }
 
-    private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed)
+    private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed, bool sacrificeFlash)
     {
         isAnimating = true;
         transform.position = startPos;
@@ -326,11 +334,13 @@ public class ChessPiece : MonoBehaviour
 
         if (delay > 0f) yield return new WaitForSeconds(delay);
 
-        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed));
+        Color? flashColor = sacrificeFlash ? SacrificeApproachFlash : (Color?)null;
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
         transform.position = endPos;
         desiredPosition = endPos;
         SetAnimatorWalking(false);
+        StopColorFlash();
         transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
 
         isAnimating = false;
@@ -355,19 +365,24 @@ public class ChessPiece : MonoBehaviour
         TriggerHappyAnimation();
         yield return new WaitForSeconds(GetAnimationClipLength("Happy"));
 
-        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, rallyPos, speed));
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, rallyPos, speed, true));
         yield return new WaitForSeconds(0.15f);
-        yield return StartCoroutine(MoveToTargetWithWalkAnim(rallyPos, finalPos, speed));
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(rallyPos, finalPos, speed, true));
 
         transform.position = finalPos;
         desiredPosition = finalPos;
         SetAnimatorWalking(false);
         transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
 
+        if (GameVfxManager.Instance != null)
+        {
+            GameVfxManager.Instance.PlayPrisonerReleaseVfx(finalPos, team);
+        }
+
         isAnimating = false;
     }
 
-    private IEnumerator MoveToTargetWithWalkAnim(Vector3 start, Vector3 end, float speed)
+    private IEnumerator MoveToTargetWithWalkAnim(Vector3 start, Vector3 end, float speed, bool spawnDustTrail, Color? flashColor = null)
     {
         Vector3 direction = (end - start).normalized;
         direction.y = 0;
@@ -380,15 +395,35 @@ public class ChessPiece : MonoBehaviour
         SetAnimatorWalking(true);
         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("RunSFX");
 
+        if (flashColor.HasValue)
+        {
+            BeginColorFlash(flashColor.Value);
+        }
+
         float distance = Vector3.Distance(start, end);
         float duration = speed <= 0f ? 0.5f : distance / speed;
         if (duration <= 0f) duration = 0.01f;
 
         float elapsed = 0f;
+        float dustTimer = 0f;
+        const float dustInterval = 0.12f;
+
         while (elapsed < duration)
         {
             transform.position = Vector3.Lerp(start, end, elapsed / duration);
             elapsed += Time.deltaTime;
+
+            if (spawnDustTrail)
+            {
+                dustTimer += Time.deltaTime;
+                if (dustTimer >= dustInterval)
+                {
+                    dustTimer = 0f;
+                    GameVfxManager vfx = GameVfxManager.EnsureInstance();
+                    if (vfx != null) vfx.SpawnDustTrail(transform.position);
+                }
+            }
+
             yield return null;
         }
 
@@ -396,5 +431,88 @@ public class ChessPiece : MonoBehaviour
 
         if (AudioManager.Instance != null) AudioManager.Instance.StopSFX();
         SetAnimatorWalking(false);
+
+        if (flashColor.HasValue)
+        {
+            StopColorFlash();
+        }
+    }
+
+    private void CacheRenderers()
+    {
+        if (pieceRenderers == null || pieceRenderers.Length == 0)
+        {
+            pieceRenderers = GetComponentsInChildren<Renderer>();
+        }
+    }
+
+    public void BeginColorFlash(Color flashColor, float interval = 0.1f)
+    {
+        CacheRenderers();
+        StopColorFlash();
+        colorFlashRoutine = StartCoroutine(ColorFlashRoutine(flashColor, interval));
+    }
+
+    public void StopColorFlash()
+    {
+        if (colorFlashRoutine != null)
+        {
+            StopCoroutine(colorFlashRoutine);
+            colorFlashRoutine = null;
+        }
+
+        ClearTint();
+    }
+
+    private IEnumerator ColorFlashRoutine(Color flashColor, float interval)
+    {
+        bool showFlash = false;
+        while (true)
+        {
+            showFlash = !showFlash;
+            if (showFlash) ApplyTint(flashColor);
+            else ClearTint();
+            yield return new WaitForSeconds(interval);
+        }
+    }
+
+    private void ApplyTint(Color tint)
+    {
+        if (pieceRenderers == null) return;
+
+        for (int i = 0; i < pieceRenderers.Length; i++)
+        {
+            Renderer renderer = pieceRenderers[i];
+            if (renderer == null) continue;
+
+            propertyBlock.Clear();
+            Material shared = renderer.sharedMaterial;
+            if (shared != null)
+            {
+                if (shared.HasProperty(BaseColorId))
+                {
+                    propertyBlock.SetColor(BaseColorId, tint);
+                }
+                else if (shared.HasProperty(ColorId))
+                {
+                    propertyBlock.SetColor(ColorId, tint);
+                }
+            }
+
+            renderer.SetPropertyBlock(propertyBlock);
+        }
+    }
+
+    private void ClearTint()
+    {
+        if (pieceRenderers == null) return;
+
+        for (int i = 0; i < pieceRenderers.Length; i++)
+        {
+            if (pieceRenderers[i] != null)
+            {
+                pieceRenderers[i].SetPropertyBlock(null);
+            }
+        }
     }
 }

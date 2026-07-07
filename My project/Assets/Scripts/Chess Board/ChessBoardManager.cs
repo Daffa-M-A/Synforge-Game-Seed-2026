@@ -56,6 +56,7 @@ public class ChessBoardManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        GameVfxManager.EnsureInstance();
         
         yOffSet += transform.position.y;
         bounds = new Vector3((TILE_WIDTH / 2f) * tileSize, 0, (TILE_HEIGHT / 2f) * tileSize) + boardCenter;
@@ -317,6 +318,9 @@ public class ChessBoardManager : MonoBehaviour
 
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
 
+        Vector3 startPos = GetTileCenter(previousPosition.x, previousPosition.y);
+        Vector3 endPos = GetTileCenter(x, y);
+
         int baseRow = (cp.team == 0) ? 0 : 15;
         bool wasInBase = (previousPosition.y == baseRow);
         bool isMovingOut = (y != baseRow);
@@ -347,16 +351,14 @@ public class ChessBoardManager : MonoBehaviour
             }
             else
             {
+                CaptureConditionType captureType = CaptureClassifier.Classify(cp, ocp);
+                bool isSacrificeCapture = captureType == CaptureConditionType.Sacrifice;
+
                 ocp.isJailed = true;
 
                 if (AudioManager.Instance != null)
                 {
-                    // Logika Sacrifice: Kita di wilayah kita, musuh di wilayah mereka, 
-                    // tapi rank kita lebih kecil (lemah) tapi bisa makan.
-                    bool amIInMyTerritory = (cp.team == 0 && cp.currentY <= 7) || (cp.team == 1 && cp.currentY >= 8);
-                    bool isEnemyInTheirTerritory = (cp.team == 0 && ocp.currentY >= 8) || (cp.team == 1 && ocp.currentY <= 7);
-
-                    if (amIInMyTerritory && isEnemyInTheirTerritory && cp.orderCharge < ocp.orderCharge)
+                    if (isSacrificeCapture)
                     {
                         AudioManager.Instance.PlaySFX("NangkapSacrificePionSFX");
                     }
@@ -369,6 +371,11 @@ public class ChessBoardManager : MonoBehaviour
                 int jailX = JAIL_COLUMN_X;
                 int jailY;
                 Vector3 capturePos = GetTileCenter(x, y);
+
+                if (GameVfxManager.Instance != null && !isSacrificeCapture)
+                {
+                    GameVfxManager.Instance.PlayCaptureVfx(captureType, capturePos, cp.team);
+                }
 
                 int sequence = GetNextJailSequence(ocp.team);
                 ocp.jailSequenceNumber = sequence;
@@ -386,7 +393,7 @@ public class ChessBoardManager : MonoBehaviour
                 ocp.currentX = jailX;
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
-                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f);
+                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f, isSacrificeCapture);
                 UpdateTileVisuals(jailX, jailY);
 				
 				// TRIGGER SHAKE: Hanya saat bidak benar-benar menangkap musuh
@@ -398,14 +405,37 @@ public class ChessBoardManager : MonoBehaviour
                     int maxPieces = (MatchManager.Instance != null) ? MatchManager.Instance.maxPiecesPerTeam : 8;
                     UIManager.Instance.UpdateTeamStats(maxPieces, whiteJailCount, blackJailCount);
                 }
+
+                chessPieces[x, y] = cp;
+                chessPieces[previousPosition.x, previousPosition.y] = null;
+
+                cp.currentX = x;
+                cp.currentY = y;
+
+                cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f, isSacrificeCapture);
+
+                UpdateTileVisuals(x, y);
+                UpdateTileVisuals(previousPosition.x, previousPosition.y);
+
+                if (matchManager != null)
+                {
+                    if (TutorialManager.Instance == null || !TutorialManager.Instance.isTutorialActive || TutorialManager.Instance.IsFreePlayStage())
+                    {
+                        matchManager.CheckWinConditions(cp, x, y);
+                    }
+                }
+
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.UpdateChargeList(chessPieces);
+                }
+
+                return true;
             }
         }
 
         chessPieces[x, y] = cp;
         chessPieces[previousPosition.x, previousPosition.y] = null;
-
-        Vector3 startPos = GetTileCenter(previousPosition.x, previousPosition.y);
-        Vector3 endPos = GetTileCenter(x, y);
 
         cp.currentX = x;
         cp.currentY = y;
@@ -535,7 +565,17 @@ public class ChessBoardManager : MonoBehaviour
         {
             AudioManager.Instance.PlaySFX("RescuePionSFX");
             AudioManager.Instance.PlaySFX("ChainBreak1SFX_Yay");
-        }        
+        }
+
+        GameVfxManager vfxManager = GameVfxManager.Instance;
+        if (vfxManager != null)
+        {
+            foreach (ChessPiece piece in freedPieces)
+            {
+                Vector2Int jailPos = jailPositions[piece];
+                vfxManager.PlayPrisonerReleaseVfx(GetTileCenter(jailPos.x, jailPos.y), piece.team);
+            }
+        }
 
         foreach (ChessPiece piece in freedPieces)
         {
