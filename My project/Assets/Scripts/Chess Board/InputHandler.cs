@@ -26,16 +26,27 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        RaycastHit info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        bool isRaycastHit = Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight", "Enemy Highlight"));
+        bool hasTileUnderMouse = TryGetTileUnderMouse(ray, out Vector2Int hoveredTile);
 
-        HandleHover(isRaycastHit, info);
-        HandleClick(isRaycastHit, info);
+        HandleHover(hasTileUnderMouse, hoveredTile);
+        HandleClick(hasTileUnderMouse, hoveredTile);
         HandleDrag(ray);
     }
 
-    private void HandleHover(bool isRaycastHit, RaycastHit info)
+    private bool TryGetTileUnderMouse(Ray ray, out Vector2Int tileIndex)
+    {
+        tileIndex = -Vector2Int.one;
+        if (boardManager == null) return false;
+
+        Plane boardPlane = new Plane(Vector3.up, Vector3.up * boardManager.yOffSet);
+        if (!boardPlane.Raycast(ray, out float distance)) return false;
+
+        tileIndex = boardManager.WorldPositionToTileIndex(ray.GetPoint(distance));
+        return tileIndex != -Vector2Int.one;
+    }
+
+    private void HandleHover(bool hasTileUnderMouse, Vector2Int hoveredTile)
     {
         if (generateBoard == null || boardManager == null) return;
 
@@ -44,47 +55,40 @@ public class InputHandler : MonoBehaviour
         {
             if (currentHover != -Vector2Int.one)
             {
-                generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, -1);
+                int currentTeam = currentlyDragging != null ? currentlyDragging.team : -1;
+                generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, currentTeam);
                 currentHover = -Vector2Int.one;
             }
             return; 
         }
 
-        int currentTeam = currentlyDragging != null ? currentlyDragging.team : -1;
+        int team = currentlyDragging != null ? currentlyDragging.team : -1;
 
-        if (isRaycastHit)
+        if (hasTileUnderMouse)
         {
-            if (info.collider == null || info.transform == null) return;
-
-            Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
-
-            if (currentHover != hitPosition)
+            if (currentHover != hoveredTile)
             {
-                if (AreHighlightsEnabled())
-                {
-                    generateBoard.UpdateHoverState(currentHover, hitPosition, availableMove, boardManager.chessPieces, currentTeam);
-                }
-                currentHover = hitPosition;
+                generateBoard.UpdateHoverState(currentHover, hoveredTile, availableMove, boardManager.chessPieces, team);
+                currentHover = hoveredTile;
             }
         }
         else if (currentHover != -Vector2Int.one)
         {
-            generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, currentTeam);
+            generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, team);
             currentHover = -Vector2Int.one;
         }
     }
 
-    private void HandleClick(bool isRaycastHit, RaycastHit info)
+    private void HandleClick(bool hasTileUnderMouse, Vector2Int hoveredTile)
     {
         if (Input.GetMouseButtonDown(0))
         {
             if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
-            if (isRaycastHit)
+            if (hasTileUnderMouse)
             {
-                if (info.transform == null) return;
-                Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
+                Vector2Int hitPosition = hoveredTile;
 
                 if (hitPosition == -Vector2Int.one) return;
 
@@ -98,6 +102,11 @@ public class InputHandler : MonoBehaviour
                 if (AreHighlightsEnabled())
                 {
                     generateBoard.HighlightTiles(availableMove, boardManager.chessPieces, hitPiece.team);
+                }
+
+                if (currentHover != -Vector2Int.one)
+                {
+                    generateBoard.UpdateHoverState(-Vector2Int.one, currentHover, availableMove, boardManager.chessPieces, hitPiece.team);
                 }
 
                 // Tampilkan info bidak di UI
@@ -118,9 +127,9 @@ public class InputHandler : MonoBehaviour
             // LOGIKA PERGERAKAN: Hanya dijalankan jika kita sedang men-drag bidak (Bidak Kawan)
             if (currentlyDragging != null)
             {
-                if (isRaycastHit && info.transform != null)
+                if (hasTileUnderMouse)
                 {
-                    Vector2Int hitPosition = generateBoard.LookUpTileIndex(info.transform.gameObject, ChessBoardManager.TILE_WIDTH, ChessBoardManager.TILE_HEIGHT);
+                    Vector2Int hitPosition = hoveredTile;
                     
                     if (hitPosition != -Vector2Int.one)
                     {

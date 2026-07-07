@@ -15,7 +15,7 @@ MonoBehaviour:
   m_Active: 1
   settings:
     passTag: GreenHighlightFeature
-    Event: 300
+    Event: 500
     filterSettings:
       RenderQueueType: 1
       LayerMask:
@@ -28,7 +28,7 @@ MonoBehaviour:
     overrideShaderPassIndex: 0
     overrideMode: 1
     overrideDepthState: 1
-    depthCompareFunction: 8
+    depthCompareFunction: 4
     enableWrite: 0
     stencilSettings:
       overrideStencilState: 0
@@ -111,7 +111,7 @@ MonoBehaviour:
   m_Active: 1
   settings:
     passTag: RedHighlight
-    Event: 300
+    Event: 500
     filterSettings:
       RenderQueueType: 1
       LayerMask:
@@ -124,7 +124,7 @@ MonoBehaviour:
     overrideShaderPassIndex: 0
     overrideMode: 1
     overrideDepthState: 1
-    depthCompareFunction: 8
+    depthCompareFunction: 4
     enableWrite: 0
     stencilSettings:
       overrideStencilState: 0
@@ -153,9 +153,9 @@ MonoBehaviour:
   m_Active: 1
   settings:
     passTag: HoverHighlightFeature
-    Event: 300
+    Event: 500
     filterSettings:
-      RenderQueueType: 0
+      RenderQueueType: 1
       LayerMask:
         serializedVersion: 2
         m_Bits: 128
@@ -166,7 +166,7 @@ MonoBehaviour:
     overrideShaderPassIndex: 0
     overrideMode: 1
     overrideDepthState: 1
-    depthCompareFunction: 8
+    depthCompareFunction: 4
     enableWrite: 0
     stencilSettings:
       overrideStencilState: 0

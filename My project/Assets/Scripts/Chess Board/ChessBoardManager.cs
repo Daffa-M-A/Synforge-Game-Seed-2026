@@ -258,6 +258,18 @@ public class ChessBoardManager : MonoBehaviour
         return new Vector3(x * tileSize, yOffSet, y * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2);
     }
 
+    public Vector2Int WorldPositionToTileIndex(Vector3 worldPosition)
+    {
+        Vector3 local = worldPosition + bounds;
+        int x = Mathf.FloorToInt(local.x / tileSize);
+        int y = Mathf.FloorToInt(local.z / tileSize);
+
+        if (x < 0 || x >= TILE_WIDTH || y < 0 || y >= TILE_HEIGHT)
+            return -Vector2Int.one;
+
+        return new Vector2Int(x, y);
+    }
+
     public bool ContainsValidMove(List<Vector2Int> moves, Vector2Int pos)
     {
         if (moves == null) return false;

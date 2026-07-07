@@ -62,41 +62,45 @@ public class GenerateBoard : MonoBehaviour
     // changing layer of tiles depending on hover state and available moves
     public void UpdateHoverState(Vector2Int previousHover, Vector2Int currentHover, List<Vector2Int> availableMoves, ChessPiece[,] board = null, int currentTeam = -1)
     {
-        if (previousHover != -Vector2Int.one)
+        if (previousHover != -Vector2Int.one && IsInsideBoard(previousHover))
         {
-            if (tiles[previousHover.x, previousHover.y] == null) return;
-
-            bool isValid = ContainsValidMove(availableMoves, previousHover);
-            if (isValid)
+            if (tiles[previousHover.x, previousHover.y] != null)
             {
-                if (board != null && board[previousHover.x, previousHover.y] != null && board[previousHover.x, previousHover.y].team != currentTeam)
-                {
-                    tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Enemy Highlight");
-                }
-                else
-                {
-                    tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Highlight");
-                }
-            }
-            else
-            {
-                tiles[previousHover.x, previousHover.y].layer = LayerMask.NameToLayer("Tile");
+                RestoreTileLayer(previousHover, availableMoves, board, currentTeam);
             }
         }
 
-		if (currentHover != -Vector2Int.one)
-				{
-					if (tiles[currentHover.x, currentHover.y] != null)
-					{
-						// Jika petak ini adalah bagian dari langkah valid, biarkan tetap di layer Highlight/Enemy
-						// Jika petak biasa, ubah ke layer Hover agar berwarna putih
-						bool isLegalMove = ContainsValidMove(availableMoves, currentHover);
-						if (!isLegalMove)
-						{
-							tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
-						}
-					}
-				}
+        if (currentHover != -Vector2Int.one && IsInsideBoard(currentHover))
+        {
+            if (tiles[currentHover.x, currentHover.y] != null)
+            {
+                tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
+            }
+        }
+    }
+
+    private void RestoreTileLayer(Vector2Int tilePos, List<Vector2Int> availableMoves, ChessPiece[,] board, int currentTeam)
+    {
+        if (ContainsValidMove(availableMoves, tilePos))
+        {
+            if (board != null && board[tilePos.x, tilePos.y] != null && board[tilePos.x, tilePos.y].team != currentTeam)
+            {
+                tiles[tilePos.x, tilePos.y].layer = LayerMask.NameToLayer("Enemy Highlight");
+            }
+            else
+            {
+                tiles[tilePos.x, tilePos.y].layer = LayerMask.NameToLayer("Highlight");
+            }
+        }
+        else
+        {
+            tiles[tilePos.x, tilePos.y].layer = LayerMask.NameToLayer("Tile");
+        }
+    }
+
+    private bool IsInsideBoard(Vector2Int pos)
+    {
+        return pos.x >= 0 && pos.x < tiles.GetLength(0) && pos.y >= 0 && pos.y < tiles.GetLength(1);
     }
 
 	public void HighlightTiles(List<Vector2Int> availableMoves, ChessPiece[,] board, int currentTeam)
