@@ -158,14 +158,14 @@ public class InputHandler : MonoBehaviour
                         }
                         else
                         {
-                            currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y));
+                            currentlyDragging.SetPosition(boardManager.GetTileCenter(previousPosition.x, previousPosition.y), true);
                         }
                     }
                 }
                 else 
                 {
                     // Kembalikan bidak ke posisi asal jika dilepas di luar area valid
-                    currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
+                    currentlyDragging.SetPosition(boardManager.GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY), true);
                 }
 
                 currentlyDragging = null;
@@ -186,7 +186,7 @@ public class InputHandler : MonoBehaviour
         Plane horizonPlane = new Plane(Vector3.up, Vector3.up * boardManager.yOffSet);
         if (horizonPlane.Raycast(ray, out float distance))
         {
-            currentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffSet);
+            currentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffSet, true);
         }
     }
 

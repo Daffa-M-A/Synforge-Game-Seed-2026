@@ -21,6 +21,10 @@ public class ChessPiece : MonoBehaviour
     protected Vector3 desiredPosition;
     protected Vector3 desiredScale = Vector3.one;
     protected bool isAnimating = false;
+    public bool IsAnimating => isAnimating;
+
+    private const float DefaultHappyDuration = 2.3f;
+    public static readonly Vector3 PrisonerFacing = Vector3.left;
 
     [Header("Jail & Ghost System Data")]
     public int originalX;
@@ -38,14 +42,31 @@ public class ChessPiece : MonoBehaviour
         anim = GetComponentInChildren<Animator>(); 
     }
 
+    private const float PositionSnapThreshold = 0.001f;
+    private const float MoveSpeed = 10f;
+
     private void Update()
     {
         if (!isAnimating)
         {
-            transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
+            if (Vector3.Distance(transform.position, desiredPosition) <= PositionSnapThreshold)
+            {
+                transform.position = desiredPosition;
+            }
+            else
+            {
+                transform.position = Vector3.MoveTowards(transform.position, desiredPosition, MoveSpeed * Time.deltaTime);
+            }
         }
 
-        transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
+        if (Vector3.Distance(transform.localScale, desiredScale) <= PositionSnapThreshold)
+        {
+            transform.localScale = desiredScale;
+        }
+        else
+        {
+            transform.localScale = Vector3.MoveTowards(transform.localScale, desiredScale, MoveSpeed * Time.deltaTime);
+        }
     }
 
     // Used for returning the piece after released from jail
@@ -225,59 +246,97 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
+    public static Vector3 GetTeamIdleFacing(int pieceTeam)
+    {
+        return pieceTeam == 0 ? Vector3.forward : Vector3.back;
+    }
+
+    protected void SetAnimatorWalking(bool walking)
+    {
+        if (anim != null) anim.SetBool("isWalking", walking);
+    }
+
+    protected void SetAnimatorPrisoner(bool prisoner)
+    {
+        if (anim != null) anim.SetBool("isPrisoner", prisoner);
+    }
+
+    protected void TriggerHappyAnimation()
+    {
+        if (anim != null) anim.SetTrigger("doHappy");
+    }
+
+    protected float GetAnimationClipLength(string clipName, float fallback = DefaultHappyDuration)
+    {
+        if (anim == null || anim.runtimeAnimatorController == null) return fallback;
+
+        AnimationClip[] clips = anim.runtimeAnimatorController.animationClips;
+        for (int i = 0; i < clips.Length; i++)
+        {
+            if (clips[i].name == clipName) return clips[i].length;
+        }
+
+        return fallback;
+    }
+
+    public void ApplyPrisonerIdleState(Vector3 jailPosition)
+    {
+        SetPosition(jailPosition, true);
+        transform.rotation = Quaternion.LookRotation(PrisonerFacing);
+        SetAnimatorWalking(false);
+        SetAnimatorPrisoner(true);
+    }
+
+    public void AnimateCaptureToPrison(Vector3 startPos, Vector3 endPos, float speed = 8f)
+    {
+        StartCoroutine(CaptureToPrisonCoroutine(startPos, endPos, speed));
+    }
+
+    private IEnumerator CaptureToPrisonCoroutine(Vector3 startPos, Vector3 endPos, float speed)
+    {
+        isAnimating = true;
+        SetAnimatorPrisoner(false);
+        SetAnimatorWalking(false);
+
+        transform.position = startPos;
+        desiredPosition = endPos;
+
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed));
+
+        transform.position = endPos;
+        desiredPosition = endPos;
+        transform.rotation = Quaternion.LookRotation(PrisonerFacing);
+        SetAnimatorWalking(false);
+        SetAnimatorPrisoner(true);
+
+        isAnimating = false;
+    }
+
     // Animation movement
     public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f)
     {
         StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed));
     }
 
-
     private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed)
     {
         isAnimating = true;
+        transform.position = startPos;
+        desiredPosition = startPos;
 
-        // 1. Tentukan arah dan rotasi tujuan
-        Vector3 moveDirection = (endPos - startPos).normalized;
-        moveDirection.y = 0; // Kunci sumbu Y agar tidak nunduk/tengadah
+        if (delay > 0f) yield return new WaitForSeconds(delay);
 
-        if (moveDirection != Vector3.zero)
-        {
-            transform.rotation = Quaternion.LookRotation(moveDirection);
-        }
-
-        // 2. Mulai Animasi Jalan
-        if (anim != null) anim.SetBool("isWalking", true);
-
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("RunSFX"); //sfx vaughan
-
-        float distance = Vector3.Distance(startPos, endPos);
-        float duration = (speed <= 0) ? 0.5f : distance / speed;
-        float elapsed = 0;
-
-        while (elapsed < duration)
-        {
-            transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed));
 
         transform.position = endPos;
-
-        if (AudioManager.Instance != null) AudioManager.Instance.StopSFX();
-
-        // 3. Matikan Animasi Jalan
-        if (anim != null) anim.SetBool("isWalking", false);
-
-        // 4. Reset Rotasi agar menghadap tim lawan kembali
-        // Tim 0 (White) hadap depan, Tim 1 (Black) hadap belakang
-        Vector3 finalFacing = (team == 0) ? Vector3.forward : Vector3.back;
-        transform.rotation = Quaternion.LookRotation(finalFacing);
+        desiredPosition = endPos;
+        SetAnimatorWalking(false);
+        transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
 
         isAnimating = false;
     }
 
-
-    // Animtaion for ghost after released from jail
+    // Animation for ghost after released from jail
     public void AnimateGhostRelease(Vector3 startPos, Vector3 rallyPos, Vector3 finalPos, float speed = 10f)
     {
         StartCoroutine(GhostReleaseCoroutine(startPos, rallyPos, finalPos, speed));
@@ -289,23 +348,26 @@ public class ChessPiece : MonoBehaviour
         transform.position = startPos;
         desiredPosition = finalPos;
 
-        yield return new WaitForSeconds(0.2f);
+        SetAnimatorWalking(false);
+        SetAnimatorPrisoner(false);
+        yield return null;
 
-        yield return StartCoroutine(MoveToTarget(startPos, rallyPos, speed));
+        TriggerHappyAnimation();
+        yield return new WaitForSeconds(GetAnimationClipLength("Happy"));
 
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, rallyPos, speed));
         yield return new WaitForSeconds(0.15f);
-
-        yield return StartCoroutine(MoveToTarget(rallyPos, finalPos, speed));
+        yield return StartCoroutine(MoveToTargetWithWalkAnim(rallyPos, finalPos, speed));
 
         transform.position = finalPos;
-
-        Vector3 idleDirection = (team == 0) ? Vector3.forward : Vector3.back;
-        transform.rotation = Quaternion.LookRotation(idleDirection);
+        desiredPosition = finalPos;
+        SetAnimatorWalking(false);
+        transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
 
         isAnimating = false;
     }
 
-    private IEnumerator MoveToTarget(Vector3 start, Vector3 end, float speed)
+    private IEnumerator MoveToTargetWithWalkAnim(Vector3 start, Vector3 end, float speed)
     {
         Vector3 direction = (end - start).normalized;
         direction.y = 0;
@@ -315,8 +377,11 @@ public class ChessPiece : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(direction);
         }
 
+        SetAnimatorWalking(true);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("RunSFX");
+
         float distance = Vector3.Distance(start, end);
-        float duration = distance / speed;
+        float duration = speed <= 0f ? 0.5f : distance / speed;
         if (duration <= 0f) duration = 0.01f;
 
         float elapsed = 0f;
@@ -326,6 +391,10 @@ public class ChessPiece : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
+
         transform.position = end;
+
+        if (AudioManager.Instance != null) AudioManager.Instance.StopSFX();
+        SetAnimatorWalking(false);
     }
 }

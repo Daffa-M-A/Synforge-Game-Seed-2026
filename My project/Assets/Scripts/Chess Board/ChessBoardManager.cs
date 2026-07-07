@@ -200,6 +200,7 @@ public class ChessBoardManager : MonoBehaviour
                     cp.currentX = jailX;
                     cp.currentY = jailY;
                     prisonerPieces[jailX, jailY] = cp;
+                    cp.ApplyPrisonerIdleState(GetTileCenter(jailX, jailY));
                     UpdateTileVisuals(jailX, jailY);
                 }
                 else
@@ -365,25 +366,27 @@ public class ChessBoardManager : MonoBehaviour
                     }
                 }
 
-                int jailX = 3;
+                int jailX = JAIL_COLUMN_X;
                 int jailY;
+                Vector3 capturePos = GetTileCenter(x, y);
 
+                int sequence = GetNextJailSequence(ocp.team);
+                ocp.jailSequenceNumber = sequence;
                 if (ocp.team == 0)
                 {
-                    whiteJailCount++;
-                    ocp.jailSequenceNumber = whiteJailCount;
-                    jailY = 15 - whiteJailCount;
+                    whiteJailCount = sequence;
+                    jailY = 15 - sequence;
                 }
                 else
                 {
-                    blackJailCount++;
-                    ocp.jailSequenceNumber = blackJailCount;
-                    jailY = blackJailCount;
+                    blackJailCount = sequence;
+                    jailY = sequence;
                 }
 
                 ocp.currentX = jailX;
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
+                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f);
                 UpdateTileVisuals(jailX, jailY);
 				
 				// TRIGGER SHAKE: Hanya saat bidak benar-benar menangkap musuh
@@ -594,6 +597,73 @@ public class ChessBoardManager : MonoBehaviour
                 AssignFinalPosition(piece, targetX, targetY, jailPositions[piece]);
             }
         }
+
+        RepackJailColumn(teamToFree);
+
+        if (UIManager.Instance != null)
+        {
+            int maxPieces = (MatchManager.Instance != null) ? MatchManager.Instance.maxPiecesPerTeam : 8;
+            UIManager.Instance.UpdateTeamStats(maxPieces, whiteJailCount, blackJailCount);
+        }
+    }
+
+    private const int JAIL_COLUMN_X = 3;
+
+    // Compact remaining prisoners so freed slots are reused (seq 1, 2, 3… with no gaps)
+    private void RepackJailColumn(int team)
+    {
+        List<ChessPiece> remaining = new List<ChessPiece>();
+
+        for (int y = 0; y < TILE_HEIGHT; y++)
+        {
+            ChessPiece piece = prisonerPieces[JAIL_COLUMN_X, y];
+            if (piece != null && piece.team == team && piece.isJailed)
+            {
+                remaining.Add(piece);
+            }
+        }
+
+        remaining.Sort((a, b) => a.jailSequenceNumber.CompareTo(b.jailSequenceNumber));
+
+        for (int y = 0; y < TILE_HEIGHT; y++)
+        {
+            if (prisonerPieces[JAIL_COLUMN_X, y] != null && prisonerPieces[JAIL_COLUMN_X, y].team == team)
+            {
+                prisonerPieces[JAIL_COLUMN_X, y] = null;
+                UpdateTileVisuals(JAIL_COLUMN_X, y);
+            }
+        }
+
+        for (int i = 0; i < remaining.Count; i++)
+        {
+            int sequence = i + 1;
+            int jailY = team == 0 ? 15 - sequence : sequence;
+            ChessPiece piece = remaining[i];
+
+            piece.jailSequenceNumber = sequence;
+            piece.currentX = JAIL_COLUMN_X;
+            piece.currentY = jailY;
+            prisonerPieces[JAIL_COLUMN_X, jailY] = piece;
+            piece.ApplyPrisonerIdleState(GetTileCenter(JAIL_COLUMN_X, jailY));
+            UpdateTileVisuals(JAIL_COLUMN_X, jailY);
+        }
+
+        if (team == 0) whiteJailCount = remaining.Count;
+        else blackJailCount = remaining.Count;
+    }
+
+    private int GetNextJailSequence(int team)
+    {
+        int count = 0;
+        for (int y = 0; y < TILE_HEIGHT; y++)
+        {
+            ChessPiece piece = prisonerPieces[JAIL_COLUMN_X, y];
+            if (piece != null && piece.team == team && piece.isJailed)
+            {
+                count++;
+            }
+        }
+        return count + 1;
     }
 
     // Helper function to assign final position and animate the release of a piece from jail
@@ -629,18 +699,26 @@ public class ChessBoardManager : MonoBehaviour
             Vector3 activePos = center; activePos.x -= 0.25f;
             Vector3 prisonerPos = center; prisonerPos.x += 0.25f;
 
-            active.SetPosition(activePos, false);
-            prisoner.SetPosition(prisonerPos, false);
+            if (!active.IsAnimating) active.SetPosition(activePos, true);
+            if (!prisoner.IsAnimating)
+            {
+                prisoner.SetPosition(prisonerPos, true);
+                prisoner.transform.rotation = Quaternion.LookRotation(ChessPiece.PrisonerFacing);
+            }
         }
         else if (active != null)
         {
             active.SetScale(Vector3.one, false);
-            active.SetPosition(center, false);
+            if (!active.IsAnimating) active.SetPosition(center, true);
         }
         else if (prisoner != null)
         {
             prisoner.SetScale(Vector3.one, false);
-            prisoner.SetPosition(center, false);
+            if (!prisoner.IsAnimating)
+            {
+                prisoner.SetPosition(center, true);
+                prisoner.transform.rotation = Quaternion.LookRotation(ChessPiece.PrisonerFacing);
+            }
         }
     }
 
