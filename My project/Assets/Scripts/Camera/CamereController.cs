@@ -10,6 +10,11 @@ public class CameraController : MonoBehaviour
     public float distance = 18f;
     public float transitionSpeed = 4f;
     public float orbitSpeed = 5f;
+	
+	[Header("Zoom Settings")]
+    public float zoomSpeed = 10f;
+    public float minDistance = 5f;
+    public float maxDistance = 30f;
 
     [Header("Turn Angles (Horizontal/Yaw)")]
     public float whiteYaw = 35f;
@@ -51,6 +56,14 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         HandleOrbit();
+		
+		// Logika Zoom menggunakan Scroll Wheel
+        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollInput != 0)
+        {
+            distance -= scrollInput * zoomSpeed;
+            distance = Mathf.Clamp(distance, minDistance, maxDistance);
+        }
 
         currentYaw = Mathf.LerpAngle(currentYaw, targetYaw, Time.deltaTime * transitionSpeed);
         currentPitch = Mathf.Lerp(currentPitch, targetPitch, Time.deltaTime * transitionSpeed);
