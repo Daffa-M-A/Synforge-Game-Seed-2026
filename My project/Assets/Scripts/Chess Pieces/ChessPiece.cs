@@ -55,14 +55,18 @@ public class ChessPiece : MonoBehaviour
         originalY = y;
     }
 
-    public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
-    {
-        List<Vector2Int> r = new List<Vector2Int>();
+	public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+		{
+			List<Vector2Int> r = new List<Vector2Int>();
 
-        if (isJailed || isGhost) return r;
+			if (isJailed || isGhost) return r;
 
-        return r;
-    }
+			// Aturan Universal Bentengan: Bisa makan musuh dan bebaskan teman di 8 petak sekitar
+			r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY));
+			r.AddRange(GetAdjacentRelease(ref board, ref ChessBoardManager.Instance.prisonerPieces, tileCountX, tileCountY));
+
+			return r;
+		}
 
     public virtual void SetPosition(Vector3 position, bool force = false)
     {

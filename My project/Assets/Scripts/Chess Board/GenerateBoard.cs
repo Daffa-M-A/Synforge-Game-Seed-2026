@@ -84,32 +84,41 @@ public class GenerateBoard : MonoBehaviour
             }
         }
 
-        if (currentHover != -Vector2Int.one)
-        {
-            if (tiles[currentHover.x, currentHover.y] != null)
-            {
-                tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
-            }
-        }
+		if (currentHover != -Vector2Int.one)
+				{
+					if (tiles[currentHover.x, currentHover.y] != null)
+					{
+						// Jika petak ini adalah bagian dari langkah valid, biarkan tetap di layer Highlight/Enemy
+						// Jika petak biasa, ubah ke layer Hover agar berwarna putih
+						bool isLegalMove = ContainsValidMove(availableMoves, currentHover);
+						if (!isLegalMove)
+						{
+							tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Hover");
+						}
+					}
+				}
     }
 
-    public void HighlightTiles(List<Vector2Int> availableMoves, ChessPiece[,] board, int currentTeam)
-    {
-        for (int i = 0; i < availableMoves.Count; i++)
-        {
-            int x = availableMoves[i].x;
-            int y = availableMoves[i].y;
+	public void HighlightTiles(List<Vector2Int> availableMoves, ChessPiece[,] board, int currentTeam)
+		{
+			for (int i = 0; i < availableMoves.Count; i++)
+			{
+				int x = availableMoves[i].x;
+				int y = availableMoves[i].y;
 
-            if (board[x, y] != null && board[x, y].team != currentTeam)
-            {
-                tiles[x, y].layer = LayerMask.NameToLayer("Enemy Highlight");
-            }
-            else
-            {
-                tiles[x, y].layer = LayerMask.NameToLayer("Highlight");
-            }
-        }
-    }
+				// Logika Deteksi Musuh: Jika ada bidak di petak tujuan dan timnya berbeda
+				if (board[x, y] != null && board[x, y].team != currentTeam)
+				{
+					// Pindahkan ke layer Enemy Highlight agar Renderer Feature menimpanya dengan warna MERAH
+					tiles[x, y].layer = LayerMask.NameToLayer("Enemy Highlight");
+				}
+				else
+				{
+					// Pindahkan ke layer Highlight agar Renderer Feature menimpanya dengan warna HIJAU
+					tiles[x, y].layer = LayerMask.NameToLayer("Highlight");
+				}
+			}
+		}
 
     public void RemoveHighlightTiles(List<Vector2Int> availableMoves)
     {

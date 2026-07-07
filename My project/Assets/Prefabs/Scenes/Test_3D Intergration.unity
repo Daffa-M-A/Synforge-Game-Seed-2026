@@ -1590,7 +1590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f2f8e516bbdda04d8e246569cb3d30c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GenerateBoard
-  tileMaterial: {fileID: 2100000, guid: 6235b4da2b5942a41a34e5f65a3549cd, type: 2}
+  tileMaterial: {fileID: 2100000, guid: 5bca386ca91622947a0b98325d63e947, type: 2}
   fortressMaterial: {fileID: 2100000, guid: 8f0178bb6f7b0b5469fc938b54e18976, type: 2}
 --- !u!33 &2736360298123676769
 MeshFilter:

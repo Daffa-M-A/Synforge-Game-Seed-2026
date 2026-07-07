@@ -5,7 +5,7 @@ public class Bishop : ChessPiece
 {
     public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> r = base.GetAvailableMoves(ref board, tileCountX, tileCountY);
 
         if (isJailed || isGhost) return r;
 
@@ -13,9 +13,6 @@ public class Bishop : ChessPiece
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(1, -1)));  // Bottom Right
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(-1, 1)));  // Top Left
         r.AddRange(GetMovesInDirection(ref board, tileCountX, tileCountY, new Vector2Int(-1, -1))); // Bottom Left
-
-        r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
-        r.AddRange(GetAdjacentRelease(ref board, ref ChessBoardManager.Instance.prisonerPieces, tileCountX, tileCountY)); // Adjacent release
 
         return r;
     }

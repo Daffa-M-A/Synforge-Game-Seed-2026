@@ -5,7 +5,7 @@ public class Pawn : ChessPiece
 {
     public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> r = base.GetAvailableMoves(ref board, tileCountX, tileCountY);
         int direction = (team == 0) ? 1 : -1;
 
         int nextY = currentY + direction;
@@ -56,8 +56,6 @@ public class Pawn : ChessPiece
             }
         }
 
-        r.AddRange(GetAdjacentCaptures(ref board, tileCountX, tileCountY)); // Adjacent kill
-        r.AddRange(GetAdjacentRelease(ref board, ref ChessBoardManager.Instance.prisonerPieces, tileCountX, tileCountY)); // Adjacent release
 
         return r;
     }
