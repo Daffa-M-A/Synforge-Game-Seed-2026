@@ -263,6 +263,9 @@ public class ChessPiece : MonoBehaviour
         {
             isGhost = false;
             rechargeCountdown = 0;
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(AudioManager.SfxReSpawn);
         }
     }
 

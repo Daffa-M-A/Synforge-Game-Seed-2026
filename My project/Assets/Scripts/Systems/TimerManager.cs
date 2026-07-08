@@ -51,11 +51,7 @@ public class TimerManager : MonoBehaviour
         // Logic for global timer
         currentGlobalTimer -= Time.deltaTime;
 
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.UpdateTurnTimerDisplay(currentPlayerTimer);
-            UIManager.Instance.UpdateGlobalTimerDisplay(currentGlobalTimer);
-        }
+        PushTimerDisplayToUI();
 
         if (AudioManager.Instance != null)
         {
@@ -128,6 +124,11 @@ public class TimerManager : MonoBehaviour
         nextGlobalLogTime = currentGlobalTimer - 60f;
         nextPlayerLogTime = currentPlayerTimer - 10f;
 
+        PushTimerDisplayToUI();
+    }
+
+    public void PushTimerDisplayToUI()
+    {
         if (UIManager.Instance != null)
         {
             UIManager.Instance.UpdateTurnTimerDisplay(currentPlayerTimer);

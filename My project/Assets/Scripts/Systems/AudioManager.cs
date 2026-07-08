@@ -26,6 +26,8 @@ public class AudioManager : MonoBehaviour
     public const string SfxVictory2 = "VictorySFX2";
     public const string SfxDraw = "DrawSFX";
     public const string SfxRun = "RunSFX";
+    public const string SfxReSpawn = "ReSpawnSFX";
+    public const string SfxTutorialObjectiveCleared = "TutorialObjectiveClearedSFX";
 
     private const float GlobalWarningThreshold = 60f;
     private const float TurnWarningThreshold = 10f;
@@ -51,9 +53,11 @@ public class AudioManager : MonoBehaviour
     [Header("BGM Clips")]
     public AudioClip mainMenuBGM;
     public AudioClip gameplayBGM;
+    public AudioClip tutorialBGM;
 
     [Header("Scene Classification")]
     [SerializeField] private string[] menuSceneNames = { "Main Menu", "Main Menu 1" };
+    [SerializeField] private string[] tutorialSceneNames = { "Tutorial Scene" };
     [SerializeField] private string[] gameplaySceneNames =
     {
         "Test_3D Intergration",
@@ -247,8 +251,19 @@ public class AudioManager : MonoBehaviour
 
         if (IsGameplayScene(scene.name))
         {
-            EnterGameplayMode();
+            EnterGameplayMode(scene.name);
         }
+    }
+
+    private bool IsTutorialScene(string sceneName)
+    {
+        for (int i = 0; i < tutorialSceneNames.Length; i++)
+        {
+            if (sceneName == tutorialSceneNames[i])
+                return true;
+        }
+
+        return false;
     }
 
     private bool IsMenuScene(string sceneName)
@@ -282,11 +297,11 @@ public class AudioManager : MonoBehaviour
         PlayBGM(mainMenuBGM);
     }
 
-    private void EnterGameplayMode()
+    private void EnterGameplayMode(string sceneName)
     {
         isGameplayActive = true;
         gameplayAudioPaused = false;
-        PlayBGM(gameplayBGM);
+        PlayBGM(IsTutorialScene(sceneName) ? tutorialBGM : gameplayBGM);
         PlayLoopOnSource(ambientLoopSource, SfxTimeticking);
         BindTurnManager();
     }

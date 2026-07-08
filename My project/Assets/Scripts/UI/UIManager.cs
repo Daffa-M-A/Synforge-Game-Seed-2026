@@ -60,18 +60,46 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
+        ResolveDependencies();
     }
 
     private void Start()
     {
+        ResolveDependencies();
+
         if (turnManager != null)
         {
             turnManager.OnTurnChanged += UpdateTurnUI;
+            UpdateTurnUI(turnManager.isWhiteTurn);
+        }
+
+        if (timerManager != null)
+            timerManager.PushTimerDisplayToUI();
+
+        if (boardManager != null && MatchManager.Instance != null)
+        {
+            UpdateChargeList(boardManager.chessPieces);
+            UpdateTeamStats(
+                MatchManager.Instance.maxPiecesPerTeam,
+                boardManager.whiteJailCount,
+                boardManager.blackJailCount);
         }
 
         HidePieceInfo();
+    }
+
+    private void ResolveDependencies()
+    {
+        if (turnManager == null) turnManager = GetComponent<TurnManager>();
+        if (timerManager == null) timerManager = GetComponent<TimerManager>();
+        if (boardManager == null) boardManager = FindFirstObjectByType<ChessBoardManager>();
     }
 
     private void OnDestroy()

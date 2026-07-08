@@ -33,8 +33,13 @@ public class TutorialManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
     }
 
     public void LoadStage(int index)
@@ -197,6 +202,9 @@ public class TutorialManager : MonoBehaviour
 
         if (isMoveCorrect)
         {
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(AudioManager.SfxTutorialObjectiveCleared);
+
             currentObjectiveIndex++;
 
             if (currentObjectiveIndex >= currentData.objectives.Count)

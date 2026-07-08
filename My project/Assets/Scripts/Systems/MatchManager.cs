@@ -13,8 +13,13 @@ public class MatchManager : MonoBehaviour
 
     public void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
     }
 
     public void CheckWinConditions(ChessPiece lastMovedPiece, int x, int y)

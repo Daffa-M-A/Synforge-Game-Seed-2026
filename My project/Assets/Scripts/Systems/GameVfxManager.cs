@@ -25,7 +25,7 @@ public class GameVfxManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
             return;
         }
 
@@ -37,6 +37,13 @@ public class GameVfxManager : MonoBehaviour
     public static GameVfxManager EnsureInstance()
     {
         if (Instance != null) return Instance;
+
+        GameVfxManager existing = FindFirstObjectByType<GameVfxManager>();
+        if (existing != null)
+        {
+            Instance = existing;
+            return existing;
+        }
 
         GameObject go = new GameObject("GameVfxManager");
         return go.AddComponent<GameVfxManager>();

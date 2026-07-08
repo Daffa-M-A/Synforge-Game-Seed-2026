@@ -48,6 +48,19 @@ MonoBehaviour:
   sfxVolume: 0.7
   mainMenuBGM: {fileID: 8300000, guid: a93be9354a4c8a940b7560b9baf43d69, type: 3}
   gameplayBGM: {fileID: 8300000, guid: ce9d6465a1af8ba40abbbb77e1a86d5b, type: 3}
+  tutorialBGM: {fileID: 8300000, guid: 57f8cf3f57e58cb4e94e03461f016d74, type: 3}
+  menuSceneNames:
+  - Main Menu
+  - Main Menu 1
+  tutorialSceneNames:
+  - Tutorial Scene
+  gameplaySceneNames:
+  - Test_3D Intergration
+  - Tutorial Scene
+  - Prototype Chess
+  - Prototype Gameplay UI
+  - Test 1_UI Integration
+  - Test 1_UI Integration (Bahtiar)
   sfxLibrary:
   - name: UIButtonPress
     clip: {fileID: 8300000, guid: ba007e6677848de49b89cd9a9939df8c, type: 3}
@@ -85,3 +98,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 273f3c2ff32598f4a9df368f088f3593, type: 3}
   - name: ReChargeSFX
     clip: {fileID: 8300000, guid: 10cfcb61122864e47a35164312afbfd6, type: 3}
+  - name: ReSpawnSFX
+    clip: {fileID: 8300000, guid: 05d42e285a41171448938b3a03cea60f, type: 3}
+  - name: TutorialObjectiveClearedSFX
+    clip: {fileID: 8300000, guid: dc2eed8c534ef2b4ca7734821b97d7bd, type: 3}

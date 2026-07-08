@@ -1619,7 +1619,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
       propertyPath: musicVolume
-      value: 0.368
+      value: 0.115
       objectReference: {fileID: 0}
     - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
       propertyPath: sfxLibrary.Array.data[7].clip
