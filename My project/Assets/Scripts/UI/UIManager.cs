@@ -141,6 +141,7 @@ public void OpenPauseMenu()
         isPaused = true;
         Time.timeScale = 0f;
 
+        if (AudioManager.Instance != null) AudioManager.Instance.SetGameplayAudioPaused(true);
         if (timerManager != null) timerManager.PauseTimer();
         if (gameplayUI != null) gameplayUI.SetActive(false);
         if (settingPanel != null) settingPanel.SetActive(true);
@@ -187,6 +188,7 @@ public void OpenPauseMenu()
 
         if (settingPanel != null) settingPanel.SetActive(false);
         if (gameplayUI != null) gameplayUI.SetActive(true);
+        if (AudioManager.Instance != null) AudioManager.Instance.SetGameplayAudioPaused(false);
         if (timerManager != null) timerManager.ResumeTimer();
     }
 

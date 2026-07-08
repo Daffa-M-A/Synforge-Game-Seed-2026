@@ -515,7 +515,7 @@ public class ChessBoardManager : MonoBehaviour
             // Change turn after random move executed
             if (turnManager != null)
             {
-                turnManager.EndTurn();
+                turnManager.EndTurn(isFromTimeout);
             }
 
             if (TutorialManager.Instance != null)
@@ -528,7 +528,7 @@ public class ChessBoardManager : MonoBehaviour
             // If there is no available move, skip the turn completely
             if (turnManager != null)
             {
-                turnManager.EndTurn();
+                turnManager.EndTurn(isFromTimeout);
             }
 
             if (TutorialManager.Instance != null)

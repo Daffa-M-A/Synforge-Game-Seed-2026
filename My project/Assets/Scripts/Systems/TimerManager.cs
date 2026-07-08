@@ -34,7 +34,19 @@ public class TimerManager : MonoBehaviour
 
     private void Update()
     {
-        if (!isTimerActive || boardManager == null || boardManager.isGameOver) return;
+        if (boardManager == null) return;
+
+        if (boardManager.isGameOver)
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.UpdateTimerWarnings(0f, 0f, isGameOver: true);
+            }
+
+            return;
+        }
+
+        if (!isTimerActive) return;
 
         // Logic for global timer
         currentGlobalTimer -= Time.deltaTime;
@@ -43,6 +55,14 @@ public class TimerManager : MonoBehaviour
         {
             UIManager.Instance.UpdateTurnTimerDisplay(currentPlayerTimer);
             UIManager.Instance.UpdateGlobalTimerDisplay(currentGlobalTimer);
+        }
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.UpdateTimerWarnings(
+                currentGlobalTimer,
+                currentPlayerTimer,
+                boardManager.isGameOver);
         }
 
         if (currentGlobalTimer <= nextGlobalLogTime && currentGlobalTimer > 0)
@@ -56,8 +76,11 @@ public class TimerManager : MonoBehaviour
             currentGlobalTimer = 0;
             isTimerActive = false;
 
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.NotifyGlobalTimerExpired();
+
             if (matchManager != null)
-                matchManager.ExecuteTiebreaker(); 
+                matchManager.ExecuteTiebreaker();
 
             return;
         }

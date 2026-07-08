@@ -8,18 +8,20 @@ public class TurnManager : MonoBehaviour
     public int currentTurnCount = 1;
 
     public event Action<bool> OnTurnChanged;
+    public event Action<bool> OnTurnEnded;
 
     private void Start()
     {
         OnTurnChanged?.Invoke(isWhiteTurn);
     }
 
-    public void EndTurn()
+    public void EndTurn(bool forcedByTimeout = false)
     {
         isWhiteTurn = !isWhiteTurn;
 
         currentTurnCount++;
 
+        OnTurnEnded?.Invoke(forcedByTimeout);
         OnTurnChanged?.Invoke(isWhiteTurn);
     }
 

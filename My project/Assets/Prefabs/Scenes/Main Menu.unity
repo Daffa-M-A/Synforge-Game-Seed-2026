@@ -1617,6 +1617,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
+      propertyPath: musicVolume
+      value: 0.368
+      objectReference: {fileID: 0}
+    - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
+      propertyPath: sfxLibrary.Array.data[7].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: fb76ee4a95ed2e34eaa098fe1b694fd0, type: 3}
+    - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
+      propertyPath: sfxLibrary.Array.data[8].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 38ba89b1cb7178342ae7434dbd10f327, type: 3}
+    - target: {fileID: 6484761024312509609, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
+      propertyPath: sfxLibrary.Array.data[9].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 6ccca5b38b3eab24d987ec1f7df57348, type: 3}
     - target: {fileID: 7172401374383293814, guid: 9f5500ca9e7fe644d9048a61d767558f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.81703746
