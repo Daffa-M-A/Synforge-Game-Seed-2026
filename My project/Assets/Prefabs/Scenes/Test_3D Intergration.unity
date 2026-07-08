@@ -427,6 +427,11 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &664889531 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1661468119518681379, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+  m_PrefabInstance: {fileID: 1051820983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &709388436
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -557,6 +562,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 612090190294825543, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -1066.912
+      objectReference: {fileID: 0}
     - target: {fileID: 761675730446659726, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -649,6 +658,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1976487790292154194, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2623228846846494506, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2817116645525181455, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_text
+      value: Tim B
+      objectReference: {fileID: 0}
     - target: {fileID: 3386951125720924622, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -697,6 +718,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5083596988312095428, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5250290864686001471, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -729,6 +754,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5521947808715717015, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -958518025, guid: 0d487190a9a03384fb849829bb171e0a, type: 3}
     - target: {fileID: 5782002349833004887, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -744,6 +773,10 @@ PrefabInstance:
     - target: {fileID: 5782002349833004887, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5905199812994953682, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_text
+      value: Tim A
       objectReference: {fileID: 0}
     - target: {fileID: 6213494580943679297, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
@@ -873,6 +906,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7845925155677022077, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -1012464936, guid: 761c45a9cce98f349b002ca46a4b12ec, type: 3}
     - target: {fileID: 8369436888678845926, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -979,6 +1016,11 @@ GameObject:
 --- !u!1 &1051820994 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7563530438020467829, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+  m_PrefabInstance: {fileID: 1051820983}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1129473948 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 761675730446659726, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
   m_PrefabInstance: {fileID: 1051820983}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1157220955
@@ -1768,6 +1810,8 @@ MonoBehaviour:
   winPanel: {fileID: 1051820986}
   losePanel: {fileID: 1051820985}
   drawPanel: {fileID: 1051820984}
+  redTeamTurnUI: {fileID: 664889531}
+  blueTeamTurnUI: {fileID: 1129473948}
 --- !u!64 &4141184046896482857
 MeshCollider:
   m_ObjectHideFlags: 0

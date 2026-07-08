@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
-using Unity.VisualScripting;
-
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -47,6 +45,10 @@ public class UIManager : MonoBehaviour
     public GameObject losePanel;
     public GameObject drawPanel;
 
+    [Header("Turn Info")]
+public GameObject redTeamTurnUI;   // drag "Red Team Turn" dari prefab
+public GameObject blueTeamTurnUI;  // drag "Blue Team Turn" dari prefab
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -71,6 +73,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // --- PERBAIKAN DI SINI: Menambahkan kurung kurawal yang hilang ---
     public void UpdateTeamStats(int maxPieces, int whiteJailCount, int blackJailCount)
     {
         int whiteAlive = maxPieces - whiteJailCount;
@@ -79,24 +82,31 @@ public class UIManager : MonoBehaviour
         if (whitePieceCountText != null) whitePieceCountText.text = $"{whiteAlive}/{maxPieces}";
         if (blackPieceCountText != null) blackPieceCountText.text = $"{blackAlive}/{maxPieces}";
 
-        if (whitePieceIcons != null)
-        {
-            for (int i = 0; i < whitePieceIcons.Length; i++)
-            {
-                if (whitePieceIcons[i] != null)
-                {
-                    whitePieceIcons[i].SetActive(i < whiteAlive);
-                }
-            }
-        }
+        // Panggil fungsi pembantu untuk update checkmark
+        UpdateTeamCheckmarks(whitePieceIcons, whiteAlive);
+        UpdateTeamCheckmarks(blackPieceIcons, blackAlive);
+    }
 
-        if (blackPieceIcons != null)
+    private void UpdateTeamCheckmarks(GameObject[] icons, int aliveCount)
+    {
+        if (icons == null) return;
+        for (int i = 0; i < icons.Length; i++)
         {
-            for (int i = 0; i < blackPieceIcons.Length; i++)
+            if (icons[i] == null) continue;
+
+            bool isAlive = i < aliveCount;
+
+            Transform checkmark = icons[i].transform.Find("Checkmark");
+            if (checkmark != null)
             {
-                if (blackPieceIcons[i] != null)
+                checkmark.gameObject.SetActive(isAlive);
+            }
+            else
+            {
+                UnityEngine.UI.Toggle toggle = icons[i].GetComponent<UnityEngine.UI.Toggle>();
+                if (toggle != null)
                 {
-                    blackPieceIcons[i].SetActive(i < blackAlive);
+                    toggle.isOn = isAlive;
                 }
             }
         }
@@ -104,15 +114,15 @@ public class UIManager : MonoBehaviour
 
     private void UpdateTurnUI(bool isWhiteTurn)
     {
-        if (turnIndicatorText != null)
-        {
-            turnIndicatorText.text = isWhiteTurn ? "Giliran TIM A" : "Giliran TIM B";
-        }
+        // isWhiteTurn true = giliran tim merah (team 0)
+        if (redTeamTurnUI != null)
+            redTeamTurnUI.SetActive(isWhiteTurn);
+
+        if (blueTeamTurnUI != null)
+            blueTeamTurnUI.SetActive(!isWhiteTurn);
 
         if (turnCountText != null && turnManager != null)
-        {
             turnCountText.text = $"TURN {turnManager.currentTurnCount}";
-        }
     }
     
     public void UpdateChargeList(ChessPiece[,] activePieces)
@@ -136,12 +146,14 @@ public class UIManager : MonoBehaviour
 
         if (allPieces.Count == 0)
         {
-            chargeOrderContent.parent.parent.gameObject.SetActive(false); 
+            if (chargeOrderContent.parent.parent != null)
+                chargeOrderContent.parent.parent.gameObject.SetActive(false); 
             return;
         }
         else
         {
-            chargeOrderContent.parent.parent.gameObject.SetActive(true); 
+            if (chargeOrderContent.parent.parent != null)
+                chargeOrderContent.parent.parent.gameObject.SetActive(true); 
         }
 
         allPieces.Sort((a, b) => b.orderCharge.CompareTo(a.orderCharge));
@@ -175,9 +187,7 @@ public class UIManager : MonoBehaviour
     public void ShowPieceInfo(ChessPiece piece)
     {
         if (pieceInfoPanel != null) pieceInfoPanel.SetActive(true);
-
         if (pieceNameText != null) pieceNameText.text = piece.pieceName;
-
         if (pieceRoleText != null) pieceRoleText.text = piece.roleName;
     }
 
@@ -194,25 +204,15 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
-    // Show game over UI based on the resultTeam parameter
     public void ShowGameOverUI(int resultTeam)
     {
         if (winPanel != null) winPanel.SetActive(false);
         if (losePanel != null) losePanel.SetActive(false);
         if (drawPanel != null) drawPanel.SetActive(false);
 
-        if (resultTeam == 0 && winPanel != null) // White win
-        {
-            winPanel.SetActive(true);
-        }
-        else if (resultTeam == 1 && losePanel != null) // Black win
-        {
-            losePanel.SetActive(true);
-        }
-        else if (resultTeam == -1 && drawPanel != null) // Draw
-        {
-            drawPanel.SetActive(true);
-        }
+        if (resultTeam == 0 && winPanel != null) winPanel.SetActive(true);
+        else if (resultTeam == 1 && losePanel != null) losePanel.SetActive(true);
+        else if (resultTeam == -1 && drawPanel != null) drawPanel.SetActive(true);
     }
 
     public void OnReplayClicked()
