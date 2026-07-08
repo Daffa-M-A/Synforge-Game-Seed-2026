@@ -46,8 +46,17 @@ public class UIManager : MonoBehaviour
     public GameObject drawPanel;
 
     [Header("Turn Info")]
-public GameObject redTeamTurnUI;   // drag "Red Team Turn" dari prefab
-public GameObject blueTeamTurnUI;  // drag "Blue Team Turn" dari prefab
+        public GameObject redTeamTurnUI;   // drag "Red Team Turn" dari prefab
+        public GameObject blueTeamTurnUI;  // drag "Blue Team Turn" dari prefab
+
+    [Header("Pause & Countdown Settings")]
+        public GameObject settingPanel; // Panel Setting/Pause
+        public GameObject gameplayUI;   // UI HUD saat main
+        public GameObject countdownOverlay; // Object yang berisi Text 3-2-1
+        public TextMeshProUGUI countdownText;
+
+        private bool isPaused = false;
+        public bool IsPaused => isPaused;
 
     private void Awake()
     {
@@ -125,6 +134,74 @@ public GameObject blueTeamTurnUI;  // drag "Blue Team Turn" dari prefab
             turnCountText.text = $"TURN {turnManager.currentTurnCount}";
     }
     
+public void OpenPauseMenu()
+    {
+        if (isPaused) return;
+
+        isPaused = true;
+        Time.timeScale = 0f;
+
+        if (timerManager != null) timerManager.PauseTimer();
+        if (gameplayUI != null) gameplayUI.SetActive(false);
+        if (settingPanel != null) settingPanel.SetActive(true);
+        if (countdownOverlay != null) countdownOverlay.SetActive(false);
+    }
+
+    public void OnContinueClicked()
+    {
+        StartCoroutine(ResumeWithCountdown());
+    }
+
+    private System.Collections.IEnumerator ResumeWithCountdown()
+{
+    // 1. Matikan Panel Setting SEGERA setelah tombol diklik
+    if (settingPanel != null) 
+    {
+        settingPanel.SetActive(false);
+    }
+
+    // 2. Aktifkan Overlay Countdown
+    if (countdownOverlay != null)
+    {
+        countdownOverlay.SetActive(true);
+        
+        for (int i = 3; i >= 1; i--)
+        {
+            if (countdownText != null) countdownText.text = i.ToString();
+            // Gunakan WaitForSecondsRealtime karena Time.timeScale sedang 0
+            yield return new WaitForSecondsRealtime(1f);
+        }
+        
+        // Matikan overlay setelah selesai
+        countdownOverlay.SetActive(false);
+    }
+
+    // 3. Kembalikan waktu ke normal dan nyalakan HUD gameplay
+    ClosePauseMenu();
+}
+
+    private void ClosePauseMenu()
+    {
+        isPaused = false;
+        Time.timeScale = 1f;
+
+        if (settingPanel != null) settingPanel.SetActive(false);
+        if (gameplayUI != null) gameplayUI.SetActive(true);
+        if (timerManager != null) timerManager.ResumeTimer();
+    }
+
+    public void OnRetryFromPauseClicked()
+    {
+        Time.timeScale = 1f; // Sangat penting!
+        OnReplayClicked();
+    }
+
+    public void OnMainMenuFromPauseClicked()
+    {
+        Time.timeScale = 1f; // Sangat penting!
+        OnMainMenuClicked();
+    }
+
     public void UpdateChargeList(ChessPiece[,] activePieces)
     {
         for (int i = chargeOrderContent.childCount - 1; i >= 0; i--)

@@ -20,6 +20,8 @@ public class InputHandler : MonoBehaviour
     {
         if (boardManager.isGameOver) return;
 
+        if (UIManager.Instance != null && UIManager.Instance.IsPaused) return;
+
         if (!currentCamera)
         {
             currentCamera = Camera.main;

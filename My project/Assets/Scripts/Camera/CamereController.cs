@@ -71,8 +71,11 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    
+
     private void Update()
     {
+        if (UIManager.Instance != null && UIManager.Instance.IsPaused) return;
         HandleOrbit();
 		
 		// Logika Zoom Smooth
