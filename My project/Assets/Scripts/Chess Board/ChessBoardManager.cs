@@ -328,6 +328,7 @@ public class ChessBoardManager : MonoBehaviour
         if (wasInBase && isMovingOut)
         {
             UpdateOrderCharge(cp);
+            cp.PlayRechargeRankVfx();
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("ReChargeSFX");            
         }
 
@@ -412,6 +413,7 @@ public class ChessBoardManager : MonoBehaviour
                 cp.currentX = x;
                 cp.currentY = y;
 
+                BeginMoveDestinationVfx(cp, x, y);
                 cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f, isSacrificeCapture);
 
                 UpdateTileVisuals(x, y);
@@ -440,6 +442,7 @@ public class ChessBoardManager : MonoBehaviour
         cp.currentX = x;
         cp.currentY = y;
 
+        BeginMoveDestinationVfx(cp, x, y);
         cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
 
         UpdateTileVisuals(x, y);
@@ -770,6 +773,12 @@ public class ChessBoardManager : MonoBehaviour
                 prisoner.transform.rotation = Quaternion.LookRotation(ChessPiece.PrisonerFacing);
             }
         }
+    }
+
+    private void BeginMoveDestinationVfx(ChessPiece cp, int destX, int destY)
+    {
+        if (generateBoard == null || cp == null) return;
+        generateBoard.PlayDestinationTileFlashWhileMoving(new Vector2Int(destX, destY), cp);
     }
 
     private void ProcessTurnLogic(bool isWhiteTurn)

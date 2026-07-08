@@ -9,6 +9,7 @@ public class GameVfxManager : MonoBehaviour
     [SerializeField] private Color patternCaptureColor = new Color(0.35f, 0.75f, 1f, 1f);
     [SerializeField] private Color adjacentCaptureColor = new Color(1f, 0.55f, 0.15f, 1f);
     [SerializeField] private Color releaseColor = new Color(0.35f, 1f, 0.55f, 1f);
+    [SerializeField] private Color rechargeNeonColor = new Color(0.1f, 1f, 0.45f, 1f);
     [SerializeField] private Color dustColor = new Color(0.72f, 0.62f, 0.48f, 0.65f);
 
     private readonly Queue<ParticleSystem> burstPool = new Queue<ParticleSystem>();
@@ -55,6 +56,12 @@ public class GameVfxManager : MonoBehaviour
         Color tint = team == 0 ? releaseColor : new Color(0.55f, 0.95f, 1f, 1f);
         PlayBurst(worldPosition, tint, 28, 0.65f, 0.4f, 1.25f);
         PlayRingBurst(worldPosition, tint, 16, 0.85f);
+    }
+
+    public void PlayRechargeRankVfx(Vector3 worldPosition)
+    {
+        PlayBurst(worldPosition, rechargeNeonColor, 16, 0.45f, 0.22f, 0.75f);
+        PlayRingBurst(worldPosition, rechargeNeonColor, 10, 0.45f);
     }
 
     public void SpawnDustTrail(Vector3 worldPosition)

@@ -35,18 +35,33 @@ public class ChessPiece : MonoBehaviour
     protected Animator anim;
 
     private Coroutine colorFlashRoutine;
-    private Renderer[] pieceRenderers;
-    private MaterialPropertyBlock propertyBlock;
+    private Coroutine rechargeFlashRoutine;
+    private readonly List<RendererFlashEntry> flashEntries = new List<RendererFlashEntry>();
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
+    private struct RendererFlashEntry
+    {
+        public Renderer Renderer;
+        public Material[] OriginalSharedMaterials;
+        public Material[] FlashMaterials;
+    }
     private static readonly Color SacrificeApproachFlash = new Color(1f, 0.92f, 0.15f);
     private static readonly Color SacrificePrisonFlash = new Color(1f, 0.18f, 0.18f);
+    private static readonly Color RechargeNeonGreen = new Color(0.1f, 1f, 0.45f);
+    private const float RechargeFlashDuration = 0.5f;
+    private const float RechargeFlashInterval = 0.08f;
 
     private void Awake()
     {
         desiredScale = transform.localScale;
         anim = GetComponentInChildren<Animator>();
-        propertyBlock = new MaterialPropertyBlock();
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseFlashMaterials();
     }
 
     private const float PositionSnapThreshold = 0.001f;
@@ -311,8 +326,7 @@ public class ChessPiece : MonoBehaviour
         Color? flashColor = sacrificeFlash ? SacrificePrisonFlash : (Color?)null;
         yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
-        transform.position = endPos;
-        desiredPosition = endPos;
+        SetPosition(endPos, true);
         transform.rotation = Quaternion.LookRotation(PrisonerFacing);
         SetAnimatorWalking(false);
         SetAnimatorPrisoner(true);
@@ -337,8 +351,7 @@ public class ChessPiece : MonoBehaviour
         Color? flashColor = sacrificeFlash ? SacrificeApproachFlash : (Color?)null;
         yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
-        transform.position = endPos;
-        desiredPosition = endPos;
+        SetPosition(endPos, true);
         SetAnimatorWalking(false);
         StopColorFlash();
         transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
@@ -355,8 +368,7 @@ public class ChessPiece : MonoBehaviour
     private IEnumerator GhostReleaseCoroutine(Vector3 startPos, Vector3 rallyPos, Vector3 finalPos, float speed)
     {
         isAnimating = true;
-        transform.position = startPos;
-        desiredPosition = finalPos;
+        SetPosition(startPos, true); // Pastikan posisi awal sinkron
 
         SetAnimatorWalking(false);
         SetAnimatorPrisoner(false);
@@ -365,12 +377,13 @@ public class ChessPiece : MonoBehaviour
         TriggerHappyAnimation();
         yield return new WaitForSeconds(GetAnimationClipLength("Happy"));
 
+        // Pergerakan ke Rally Point lalu ke Final Point
         yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, rallyPos, speed, true));
         yield return new WaitForSeconds(0.15f);
         yield return StartCoroutine(MoveToTargetWithWalkAnim(rallyPos, finalPos, speed, true));
 
-        transform.position = finalPos;
-        desiredPosition = finalPos;
+        // Snap akhir ke tengah tile
+        SetPosition(finalPos, true);
         SetAnimatorWalking(false);
         transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
 
@@ -380,6 +393,12 @@ public class ChessPiece : MonoBehaviour
         }
 
         isAnimating = false;
+
+        // Visual snap: Jika di tile tujuan ada bidak lain, tata agar tidak tumpang tindih
+        if (ChessBoardManager.Instance != null)
+        {
+            ChessBoardManager.Instance.UpdateTileVisuals(currentX, currentY);
+        }
     }
 
     private IEnumerator MoveToTargetWithWalkAnim(Vector3 start, Vector3 end, float speed, bool spawnDustTrail, Color? flashColor = null)
@@ -408,9 +427,12 @@ public class ChessPiece : MonoBehaviour
         float dustTimer = 0f;
         const float dustInterval = 0.12f;
 
-        while (elapsed < duration)
+       while (elapsed < duration)
         {
-            transform.position = Vector3.Lerp(start, end, elapsed / duration);
+            Vector3 currentPos = Vector3.Lerp(start, end, elapsed / duration);
+            transform.position = currentPos;
+            desiredPosition = currentPos; // SINKRONISASI: Agar Update() tidak menarik bidak balik
+            
             elapsed += Time.deltaTime;
 
             if (spawnDustTrail)
@@ -427,6 +449,8 @@ public class ChessPiece : MonoBehaviour
             yield return null;
         }
 
+        SetPosition(end, true); // Snap terakhir untuk memastikan presisi
+
         transform.position = end;
 
         if (AudioManager.Instance != null) AudioManager.Instance.StopLoopSFX();
@@ -438,18 +462,58 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
-    private void CacheRenderers()
+    public void PlayRechargeRankVfx()
     {
-        if (pieceRenderers == null || pieceRenderers.Length == 0)
+        if (rechargeFlashRoutine != null)
         {
-            pieceRenderers = GetComponentsInChildren<Renderer>();
+            StopCoroutine(rechargeFlashRoutine);
+            ClearTint();
+            ReleaseFlashMaterials();
         }
+
+        rechargeFlashRoutine = StartCoroutine(RechargeRankFlashCoroutine());
+    }
+
+    public bool IsInIdleAnimation()
+    {
+        if (isAnimating) return false;
+        if (anim == null) return true;
+
+        AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+        return state.IsName("Idle_Home") || state.IsName("Idle1");
+    }
+
+    private IEnumerator RechargeRankFlashCoroutine()
+    {
+        PrepareFlashEntries();
+
+        if (GameVfxManager.Instance != null)
+        {
+            GameVfxManager.Instance.PlayRechargeRankVfx(transform.position);
+        }
+
+        float elapsed = 0f;
+        bool showFlash = false;
+
+        while (elapsed < RechargeFlashDuration)
+        {
+            showFlash = !showFlash;
+            if (showFlash) ApplyTint(RechargeNeonGreen);
+            else ClearTint();
+
+            yield return new WaitForSeconds(RechargeFlashInterval);
+            elapsed += RechargeFlashInterval;
+        }
+
+        ClearTint();
+        ReleaseFlashMaterials();
+        rechargeFlashRoutine = null;
     }
 
     public void BeginColorFlash(Color flashColor, float interval = 0.1f)
     {
-        CacheRenderers();
         StopColorFlash();
+        PrepareFlashEntries();
         colorFlashRoutine = StartCoroutine(ColorFlashRoutine(flashColor, interval));
     }
 
@@ -462,6 +526,7 @@ public class ChessPiece : MonoBehaviour
         }
 
         ClearTint();
+        ReleaseFlashMaterials();
     }
 
     private IEnumerator ColorFlashRoutine(Color flashColor, float interval)
@@ -476,43 +541,89 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
-    private void ApplyTint(Color tint)
+    private void PrepareFlashEntries()
     {
-        if (pieceRenderers == null) return;
+        ReleaseFlashMaterials();
 
-        for (int i = 0; i < pieceRenderers.Length; i++)
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
         {
-            Renderer renderer = pieceRenderers[i];
-            if (renderer == null) continue;
+            Renderer renderer = renderers[i];
+            if (renderer == null || !renderer.enabled) continue;
+            if (renderer is ParticleSystemRenderer || renderer is TrailRenderer || renderer is LineRenderer) continue;
 
-            propertyBlock.Clear();
-            Material shared = renderer.sharedMaterial;
-            if (shared != null)
+            Material[] originals = renderer.sharedMaterials;
+            Material[] flashMats = new Material[originals.Length];
+            for (int m = 0; m < originals.Length; m++)
             {
-                if (shared.HasProperty(BaseColorId))
+                if (originals[m] == null) continue;
+
+                flashMats[m] = new Material(originals[m]);
+                if (flashMats[m].HasProperty(EmissionColorId))
                 {
-                    propertyBlock.SetColor(BaseColorId, tint);
-                }
-                else if (shared.HasProperty(ColorId))
-                {
-                    propertyBlock.SetColor(ColorId, tint);
+                    flashMats[m].EnableKeyword("_EMISSION");
+                    flashMats[m].globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
                 }
             }
 
-            renderer.SetPropertyBlock(propertyBlock);
+            flashEntries.Add(new RendererFlashEntry
+            {
+                Renderer = renderer,
+                OriginalSharedMaterials = originals,
+                FlashMaterials = flashMats
+            });
+        }
+    }
+
+    private void ApplyTint(Color tint)
+    {
+        Color emission = tint * 2.5f;
+        emission.a = 1f;
+
+        for (int i = 0; i < flashEntries.Count; i++)
+        {
+            RendererFlashEntry entry = flashEntries[i];
+            if (entry.Renderer == null) continue;
+
+            Material[] flashMats = entry.FlashMaterials;
+            for (int m = 0; m < flashMats.Length; m++)
+            {
+                Material mat = flashMats[m];
+                if (mat == null) continue;
+
+                if (mat.HasProperty(BaseColorId)) mat.SetColor(BaseColorId, tint);
+                else if (mat.HasProperty(ColorId)) mat.SetColor(ColorId, tint);
+
+                if (mat.HasProperty(EmissionColorId)) mat.SetColor(EmissionColorId, emission);
+            }
+
+            entry.Renderer.materials = flashMats;
         }
     }
 
     private void ClearTint()
     {
-        if (pieceRenderers == null) return;
-
-        for (int i = 0; i < pieceRenderers.Length; i++)
+        for (int i = 0; i < flashEntries.Count; i++)
         {
-            if (pieceRenderers[i] != null)
+            RendererFlashEntry entry = flashEntries[i];
+            if (entry.Renderer == null) continue;
+            entry.Renderer.sharedMaterials = entry.OriginalSharedMaterials;
+        }
+    }
+
+    private void ReleaseFlashMaterials()
+    {
+        for (int i = 0; i < flashEntries.Count; i++)
+        {
+            Material[] flashMats = flashEntries[i].FlashMaterials;
+            if (flashMats == null) continue;
+
+            for (int m = 0; m < flashMats.Length; m++)
             {
-                pieceRenderers[i].SetPropertyBlock(null);
+                if (flashMats[m] != null) Destroy(flashMats[m]);
             }
         }
+
+        flashEntries.Clear();
     }
 }
