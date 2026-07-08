@@ -47,9 +47,7 @@ public class ChessPiece : MonoBehaviour
         public Material[] OriginalSharedMaterials;
         public Material[] FlashMaterials;
     }
-    private static readonly Color SacrificeApproachFlash = new Color(1f, 0.92f, 0.15f);
-    private static readonly Color SacrificePrisonFlash = new Color(1f, 0.18f, 0.18f);
-    private static readonly Color RechargeNeonGreen = new Color(0.1f, 1f, 0.45f);
+
     private const float RechargeFlashDuration = 0.5f;
     private const float RechargeFlashInterval = 0.08f;
 
@@ -323,7 +321,7 @@ public class ChessPiece : MonoBehaviour
         transform.position = startPos;
         desiredPosition = endPos;
 
-        Color? flashColor = sacrificeFlash ? SacrificePrisonFlash : (Color?)null;
+        Color? flashColor = sacrificeFlash ? GameVfxManager.Instance.sacrificePrisonBlink : (Color?)null;
         yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
         SetPosition(endPos, true);
@@ -348,7 +346,7 @@ public class ChessPiece : MonoBehaviour
 
         if (delay > 0f) yield return new WaitForSeconds(delay);
 
-        Color? flashColor = sacrificeFlash ? SacrificeApproachFlash : (Color?)null;
+        Color? flashColor = sacrificeFlash ? GameVfxManager.Instance.sacrificeApproachBlink : (Color?)null;
         yield return StartCoroutine(MoveToTargetWithWalkAnim(startPos, endPos, speed, true, flashColor));
 
         SetPosition(endPos, true);
@@ -498,7 +496,7 @@ public class ChessPiece : MonoBehaviour
         while (elapsed < RechargeFlashDuration)
         {
             showFlash = !showFlash;
-            if (showFlash) ApplyTint(RechargeNeonGreen);
+            if (showFlash) ApplyTint(GameVfxManager.Instance.rechargeBlink);
             else ClearTint();
 
             yield return new WaitForSeconds(RechargeFlashInterval);

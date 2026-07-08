@@ -12,6 +12,11 @@ public class GameVfxManager : MonoBehaviour
     [SerializeField] private Color rechargeNeonColor = new Color(0.1f, 1f, 0.45f, 1f);
     [SerializeField] private Color dustColor = new Color(0.72f, 0.62f, 0.48f, 0.65f);
 
+    [Header("Character Blink Highlights")]
+    public Color rechargeBlink = new Color(0.1f, 1f, 0.45f, 1f); // Warna Hijau (Recharge)
+    public Color sacrificeApproachBlink = new Color(1f, 0.92f, 0.15f, 1f); // Kuning
+    public Color sacrificePrisonBlink = new Color(1f, 0.18f, 0.18f, 1f); // Merah
+
     private readonly Queue<ParticleSystem> burstPool = new Queue<ParticleSystem>();
     private readonly Queue<ParticleSystem> dustPool = new Queue<ParticleSystem>();
     private Transform poolRoot;
