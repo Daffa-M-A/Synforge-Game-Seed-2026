@@ -303,6 +303,18 @@ public void OpenPauseMenu()
         if (pieceInfoPanel != null) pieceInfoPanel.SetActive(false);
     }
 
+    public void StartPvPGame(string sceneName)
+    {
+        PlayerPrefs.SetInt("IsPvE", 0);
+        LoadLevel(sceneName);
+    }
+
+    public void StartPvEGame(string sceneName)
+    {
+        PlayerPrefs.SetInt("IsPvE", 1);
+        LoadLevel(sceneName);
+    }
+
     public void LoadLevel(string sceneName)
     {
         int levelPilihan = (sceneName == "Prototype Chess") ? 2 : 1;

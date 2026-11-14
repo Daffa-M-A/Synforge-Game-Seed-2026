@@ -88,6 +88,8 @@ public class InputHandler : MonoBehaviour
             if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
+            if (boardManager.isPvEMode && !turnManager.isWhiteTurn) return;
+
             if (hasTileUnderMouse)
             {
                 Vector2Int hitPosition = hoveredTile;

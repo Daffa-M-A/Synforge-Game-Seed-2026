@@ -377,16 +377,10 @@ MonoBehaviour:
   boardCenter: {x: 0, y: -0.5, z: 0}
   deathSize: 0.5
   deathSpacing: 0.3
-  prefabs:
-  - {fileID: 3262298733796543025, guid: c75d25541e8091948a89160f96ad7817, type: 3}
-  - {fileID: 4250761135870673656, guid: 8405d46142648a24b8c6de63469bc23b, type: 3}
-  - {fileID: 1884375990312886374, guid: 0f86f8835253d9349ab68c9330fe9727, type: 3}
-  - {fileID: 8189492818690955346, guid: 19703312a4f93604587cec4af984492e, type: 3}
-  - {fileID: 1622575143322181080, guid: 50727c373dacb8a45a49be528281626a, type: 3}
-  - {fileID: 8923593976821574716, guid: 6bf3f3c15aeab7a458c6bdbd31cecf2d, type: 3}
-  teamMaterials:
-  - {fileID: 2100000, guid: 2fae1ab72a8be9543b6af1f781abb6e1, type: 2}
-  - {fileID: 2100000, guid: c9bd50e13cecc0b46990843c46f2d64e, type: 2}
+  isPvEMode: 1
+  whitePrefabs: []
+  blackPrefabs: []
+  namesTextFile: {fileID: 0}
   globalChargeCounter: 0
   isGameOver: 0
   whiteJailCount: 0
@@ -405,6 +399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GenerateBoard
   tileMaterial: {fileID: 2100000, guid: 6235b4da2b5942a41a34e5f65a3549cd, type: 2}
   fortressMaterial: {fileID: 2100000, guid: 8f0178bb6f7b0b5469fc938b54e18976, type: 2}
+  destinationFlashInterval: 0.12
 --- !u!64 &664481936
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -648,13 +643,20 @@ MonoBehaviour:
   turnManager: {fileID: 1701369549}
   pivotPoint: {x: 0, y: 0, z: 0}
   distance: 18
+  zoomSmoothness: 10
+  defaultShakeDuration: 0.2
+  defaultShakeIntensity: 0.3
   transitionSpeed: 3.5
   orbitSpeed: 5
+  zoomSpeed: 10
+  minDistance: 5
+  maxDistance: 30
   whiteYaw: 35
   blackYaw: 215
   defaultPitch: 45
   minPitch: 20
   maxPitch: 85
+  impactVolume: {fileID: 0}
 --- !u!1 &1701369548
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,6 +689,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d7c9c9c246408b4a87d3b46c9b5c975, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
+  isWhiteTurn: 1
+  currentTurnCount: 1
 --- !u!4 &1701369550
 Transform:
   m_ObjectHideFlags: 0
@@ -714,6 +718,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93d05355b35d1234a92633059dba5050, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  turnManager: {fileID: 0}
+  timerManager: {fileID: 0}
+  boardManager: {fileID: 0}
+  whitePieceCountText: {fileID: 0}
+  blackPieceCountText: {fileID: 0}
+  turnIndicatorText: {fileID: 0}
+  turnCountText: {fileID: 0}
+  globalTimerText: {fileID: 0}
+  turnTimerText: {fileID: 0}
+  pieceInfoPanel: {fileID: 0}
+  pieceNameText: {fileID: 0}
+  pieceRoleText: {fileID: 0}
+  chargeOrderContent: {fileID: 0}
+  chargeLogPrefab: {fileID: 0}
+  whitePieceIcons: []
+  blackPieceIcons: []
+  winPanel: {fileID: 0}
+  losePanel: {fileID: 0}
+  drawPanel: {fileID: 0}
+  redTeamTurnUI: {fileID: 0}
+  blueTeamTurnUI: {fileID: 0}
+  settingPanel: {fileID: 0}
+  gameplayUI: {fileID: 0}
+  countdownOverlay: {fileID: 0}
+  countdownText: {fileID: 0}
 --- !u!114 &1701369552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -768,6 +797,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 317405997557992064, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 985257423863295693, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1052281650982759751, guid: 5db009f29a60d0247ad26a80f88ec3fa, type: 3}

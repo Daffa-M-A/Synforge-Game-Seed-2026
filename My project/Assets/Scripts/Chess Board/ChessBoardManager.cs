@@ -17,6 +17,9 @@ public class ChessBoardManager : MonoBehaviour
     public float deathSize = 0.5f;
     public float deathSpacing = 0.3f;
 
+    [Header("Game Mode")]
+    public bool isPvEMode = true;
+
     [Header("Prefabs & Materials")]
     [SerializeField] private GameObject[] whitePrefabs;
     [SerializeField] private GameObject[] blackPrefabs;
@@ -57,7 +60,9 @@ public class ChessBoardManager : MonoBehaviour
     {
         Instance = this;
         GameVfxManager.EnsureInstance();
-        
+
+        isPvEMode = PlayerPrefs.GetInt("IsPvE", 0) == 1;
+
         yOffSet += transform.position.y;
         bounds = new Vector3((TILE_WIDTH / 2f) * tileSize, 0, (TILE_HEIGHT / 2f) * tileSize) + boardCenter;
 
