@@ -11,6 +11,7 @@ public class PieceWorldUI : MonoBehaviour
     {
         piece = GetComponentInParent<ChessPiece>();
         rankText = GetComponentInChildren<TextMeshProUGUI>();
+        if (rankText != null) rankText.richText = true;
         if (Camera.main != null) mainCameraTransform = Camera.main.transform;
     }
 
@@ -18,9 +19,18 @@ public class PieceWorldUI : MonoBehaviour
     {
         if (piece == null || rankText == null) return;
 
-        // Update angka sesuai orderCharge bidak
-        // Jika 0 (belum keluar base), sembunyikan atau biarkan kosong
-        rankText.text = piece.orderCharge > 0 ? piece.orderCharge.ToString() : "";
+        string chargeText = piece.orderCharge > 0 ? piece.orderCharge.ToString() : "";
+        int returnCountdown = piece.GetHomeReturnCountdownDisplay();
+
+        if (returnCountdown > 0)
+        {
+            string countdownText = $"<size=80%><color=#FFE27A>{returnCountdown}</color></size>";
+            rankText.text = string.IsNullOrEmpty(chargeText) ? countdownText : chargeText + "\n" + countdownText;
+        }
+        else
+        {
+            rankText.text = chargeText;
+        }
 
         // Billboard: Membuat teks selalu menghadap kamera
         if (mainCameraTransform != null)

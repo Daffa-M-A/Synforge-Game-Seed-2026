@@ -17,6 +17,12 @@ public class ChessPiece : MonoBehaviour
     public string pieceName;
     public string roleName;
 
+    public const int AutoReturnOwnerTurns = 3;
+    public const int FortressColumnX = 3;
+    public bool hasLeftHomeRow = false;
+    public int idleOwnerTurns = 0;
+    public bool movedThisTurn = false;
+
     protected Vector3 desiredPosition;
     protected Vector3 desiredScale = Vector3.one;
     protected bool isAnimating = false;
@@ -121,39 +127,60 @@ public class ChessPiece : MonoBehaviour
         if (force) transform.localScale = desiredScale;
     }
 
-    // Check if the order chagre allow chess piece to kill
+    public static int GetHomeRow(int pieceTeam)
+    {
+        return pieceTeam == 0 ? 0 : 15;
+    }
+
+    public static int GetEnemyFortressY(int captorTeam)
+    {
+        return captorTeam == 0 ? 15 : 0;
+    }
+
+    public static bool IsEnemyFortressTile(int captorTeam, int x, int y)
+    {
+        return x == FortressColumnX && y == GetEnemyFortressY(captorTeam);
+    }
+
+    public bool IsOnHomeRow()
+    {
+        return currentY == GetHomeRow(team);
+    }
+
+    public bool IsExemptFromAutoReturn()
+    {
+        if (isJailed || isGhost) return true;
+        if (IsOnHomeRow()) return true;
+        if (orderCharge == 0 && !hasLeftHomeRow) return true;
+        return false;
+    }
+
+    public int GetHomeReturnCountdownDisplay()
+    {
+        if (IsExemptFromAutoReturn()) return 0;
+
+        int remaining = AutoReturnOwnerTurns - idleOwnerTurns;
+        return remaining < 1 ? 1 : remaining;
+    }
+
+    public void MarkMovedThisTurn()
+    {
+        movedThisTurn = true;
+        idleOwnerTurns = 0;
+    }
+
     public virtual bool CanCapture(ChessPiece enemy)
     {
-        if (this.isGhost || this.isJailed) return false;
-
+        if (enemy == null) return false;
+        if (isGhost || isJailed) return false;
         if (enemy.isGhost || enemy.isJailed) return false;
 
-        int myBaseRow = (team == 0) ? 0 : 15;
-        int enemyBaseRow = (team == 0) ? 15 : 0;
+        bool victimOnEnemyFortress = IsEnemyFortressTile(team, enemy.currentX, enemy.currentY);
+        if (orderCharge >= 1 && enemy.orderCharge == 0 && victimOnEnemyFortress)
+            return true;
 
-        // Will always kill inside the area
-        if (this.currentY == myBaseRow) return true;
-
-        // Define area
-        bool amIInMyTerritory = (team == 0 && this.currentY <= 7) || (team == 1 && this.currentY >= 8);
-        bool isEnemyInMyTerritory = (team == 0 && enemy.currentY <= 7) || (team == 1 && enemy.currentY >= 8);
-        bool isEnemyInTheirTerritory = (team == 0 && enemy.currentY >= 8) || (team == 1 && enemy.currentY <= 7);
-
-        // Check if enemy piece is inside his base
-        bool isEnemyInTheirBase = (enemy.currentY == enemyBaseRow);
-
-        // Block if enemy piece is inside the base row
-        if (amIInMyTerritory && isEnemyInTheirBase) return false;
-        else if (isEnemyInTheirBase) return true;
-
-        // Enemy in our terriroty
-        if (isEnemyInMyTerritory) return true;
-
-        // Rule 2: Can use sacrifice to kill the enemy piece
-        if (amIInMyTerritory && isEnemyInTheirTerritory) return true;
-
-        // Default (check if the order charge allow to kill)
-        return this.orderCharge > enemy.orderCharge;
+        if (orderCharge < 1 || enemy.orderCharge < 1) return false;
+        return orderCharge > enemy.orderCharge;
     }
 
     // Rules 4: Chess piece can eat if there is an enemy piece adjacent to the piece
@@ -396,6 +423,39 @@ public class ChessPiece : MonoBehaviour
         isAnimating = false;
 
         // Visual snap: Jika di tile tujuan ada bidak lain, tata agar tidak tumpang tindih
+        if (ChessBoardManager.Instance != null)
+        {
+            ChessBoardManager.Instance.UpdateTileVisuals(currentX, currentY);
+        }
+    }
+
+    public void AnimateHomeReturn(List<Vector3> worldPath, float speed = 8f)
+    {
+        StartCoroutine(HomeReturnCoroutine(worldPath, speed));
+    }
+
+    private IEnumerator HomeReturnCoroutine(List<Vector3> worldPath, float speed)
+    {
+        if (worldPath == null || worldPath.Count == 0) yield break;
+
+        isAnimating = true;
+        SetAnimatorPrisoner(false);
+
+        Vector3 start = worldPath[0];
+        transform.position = start;
+        desiredPosition = start;
+
+        for (int i = 1; i < worldPath.Count; i++)
+        {
+            yield return StartCoroutine(MoveToTargetWithWalkAnim(worldPath[i - 1], worldPath[i], speed, true));
+        }
+
+        Vector3 end = worldPath[worldPath.Count - 1];
+        SetPosition(end, true);
+        SetAnimatorWalking(false);
+        transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
+        isAnimating = false;
+
         if (ChessBoardManager.Instance != null)
         {
             ChessBoardManager.Instance.UpdateTileVisuals(currentX, currentY);

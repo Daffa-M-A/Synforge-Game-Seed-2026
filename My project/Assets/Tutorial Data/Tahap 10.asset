@@ -16,25 +16,25 @@ MonoBehaviour:
   skipEnemyTurn: 1
   enableTimer: 0
   showObjectiveHighlight: 0
-  mainInstruction: Tangkap musuh yang mencoba kabur dengan me-reset charge.
+  mainInstruction: Tangkap musuh yang Charge-nya lebih kecil, termasuk di baris markas.
   descriptions:
-  - 'Setelah lawan melakukan Recharge di benteng, ia masih dapat dikejar selama musuh
-    belum keluar untuk mengubah Charge.
+  - 'Charge selalu menentukan. Angka lebih kecil tidak bisa makan angka lebih besar,
+    di petak mana pun.
 
 
-    Manfaatkan kesempatan ini untuk menangkap
-    musuh.'
+    Pulang ke markas tidak mengubah Charge. Manfaatkan
+    angka yang lebih tinggi untuk menangkap musuh.'
   playerPieces:
   - pieceType: 2
     team: 0
     startPos: {x: 0, y: 10}
-    customChargeOrder: 1
+    customChargeOrder: 2
     isPrisoner: 0
   enemyPieces:
   - pieceType: 2
     team: 1
     startPos: {x: 0, y: 15}
-    customChargeOrder: 2
+    customChargeOrder: 1
     isPrisoner: 0
   forceWhiteTurnOnStart: 0
   enemyAutoMove: 0

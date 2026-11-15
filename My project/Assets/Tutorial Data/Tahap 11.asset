@@ -12,29 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
   m_Name: Tahap 11
   m_EditorClassIdentifier: 
-  stageTitle: Sacrifice
+  stageTitle: Charge
   skipEnemyTurn: 1
   enableTimer: 0
   showObjectiveHighlight: 0
-  mainInstruction: Menangkap musuh yang memiliki charge lebih besar menggunakan sacrifice.
+  mainInstruction: Tangkap musuh hanya jika Charge-mu lebih besar.
   descriptions:
-  - 'Saat masih berada di wilayah sendiri, karakter dapat melakukan Sacrifice. Sacrifice
-    mengabaikan aturan Charge, tetapi tidak dapat langsung menyentuh benteng lawan.
+  - 'Hanya bidak dengan Charge lebih tinggi yang boleh makan. Angka yang sama tidak
+    bisa saling makan, dan angka lebih kecil tidak pernah makan angka lebih besar.
 
 
-    Tidak
-    berlaku pada musuh yang berada di petak pertama.'
+    Charge
+    0 tidak makan dan tidak dimakan, kecuali jika ia berdiri di petak benteng lawan.'
   playerPieces:
   - pieceType: 2
     team: 0
     startPos: {x: 5, y: 5}
-    customChargeOrder: 1
+    customChargeOrder: 2
     isPrisoner: 0
   enemyPieces:
   - pieceType: 2
     team: 1
     startPos: {x: 5, y: 12}
-    customChargeOrder: 2
+    customChargeOrder: 1
     isPrisoner: 0
   forceWhiteTurnOnStart: 0
   enemyAutoMove: 0

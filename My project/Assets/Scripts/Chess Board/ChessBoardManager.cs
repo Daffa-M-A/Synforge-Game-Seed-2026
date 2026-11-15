@@ -45,7 +45,11 @@ public class ChessBoardManager : MonoBehaviour
 
     private void Start()
     {
-        if (turnManager != null) turnManager.OnTurnChanged += ProcessTurnLogic;
+        if (turnManager != null)
+        {
+            turnManager.OnTurnChanged += ProcessTurnLogic;
+            turnManager.OnOwnerTurnEnding += ProcessEndOfOwnerTurn;
+        }
 
         if (UIManager.Instance != null)
         {
@@ -183,6 +187,15 @@ public class ChessBoardManager : MonoBehaviour
                 ChessPiece cp = SpawnSinglePiece(setup.pieceType, setup.team);
                 cp.orderCharge = setup.customChargeOrder;
                 cp.SaveOriginalPosition(setup.startPos.x, setup.startPos.y);
+                int homeRow = ChessPiece.GetHomeRow(setup.team);
+                if (setup.startPos.y != homeRow || setup.customChargeOrder > 0)
+                {
+                    cp.hasLeftHomeRow = setup.startPos.y != homeRow;
+                }
+                if (setup.customChargeOrder > globalChargeCounter)
+                {
+                    globalChargeCounter = setup.customChargeOrder;
+                }
 
                 if (setup.isPrisoner)
                 {
@@ -287,55 +300,86 @@ public class ChessBoardManager : MonoBehaviour
         return false;
     }
 
-    // Update order charge heirarki
-    private void UpdateOrderCharge(ChessPiece resettingPiece)
+    public List<ChessPiece> CollectAllPieces()
     {
-        if (resettingPiece.orderCharge == 0)
-        {
-            globalChargeCounter++;
-            resettingPiece.orderCharge = globalChargeCounter;
-        }
-        else
-        {
-            // When chess piece once before get out of the first tile and reset
-            int oldCharge = resettingPiece.orderCharge;
+        List<ChessPiece> pieces = new List<ChessPiece>();
+        HashSet<ChessPiece> seen = new HashSet<ChessPiece>();
 
+        void AddFrom(ChessPiece[,] grid)
+        {
+            if (grid == null) return;
             for (int x = 0; x < TILE_WIDTH; x++)
             {
                 for (int y = 0; y < TILE_HEIGHT; y++)
                 {
-                    ChessPiece piece = chessPieces[x, y];
-
-                    if (piece != null && piece.orderCharge > oldCharge)
+                    ChessPiece piece = grid[x, y];
+                    if (piece != null && seen.Add(piece))
                     {
-                        piece.orderCharge--;
+                        pieces.Add(piece);
                     }
                 }
             }
-
-            resettingPiece.orderCharge = globalChargeCounter;
         }
+
+        AddFrom(chessPieces);
+        AddFrom(prisonerPieces);
+        return pieces;
+    }
+
+    private void UpdateOrderCharge(ChessPiece resettingPiece)
+    {
+        if (resettingPiece == null) return;
+
+        List<ChessPiece> others = new List<ChessPiece>();
+        List<ChessPiece> allPieces = CollectAllPieces();
+        for (int i = 0; i < allPieces.Count; i++)
+        {
+            ChessPiece piece = allPieces[i];
+            if (piece != resettingPiece && piece.orderCharge > 0)
+            {
+                others.Add(piece);
+            }
+        }
+
+        others.Sort((a, b) => a.orderCharge.CompareTo(b.orderCharge));
+        for (int i = 0; i < others.Count; i++)
+        {
+            others[i].orderCharge = i + 1;
+        }
+
+        resettingPiece.orderCharge = others.Count + 1;
+        globalChargeCounter = resettingPiece.orderCharge;
     }
 
 		public bool MoveTo(ChessPiece cp, int x, int y, List<Vector2Int> availableMove)
 			{
 				if (!ContainsValidMove(availableMove, new Vector2Int(x, y))) return false;
 
+        ChessPiece occupant = chessPieces[x, y];
+        if (occupant != null)
+        {
+            if (occupant.team == cp.team) return false;
+            if (!cp.CanCapture(occupant)) return false;
+        }
+
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY);
 
         Vector3 startPos = GetTileCenter(previousPosition.x, previousPosition.y);
         Vector3 endPos = GetTileCenter(x, y);
 
-        int baseRow = (cp.team == 0) ? 0 : 15;
+        int baseRow = ChessPiece.GetHomeRow(cp.team);
         bool wasInBase = (previousPosition.y == baseRow);
         bool isMovingOut = (y != baseRow);
 
         if (wasInBase && isMovingOut)
         {
+            cp.hasLeftHomeRow = true;
             UpdateOrderCharge(cp);
             cp.PlayRechargeRankVfx();
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("ReChargeSFX");            
         }
+
+        cp.MarkMovedThisTurn();
 
         if (prisonerPieces[x, y] != null)
         {
@@ -358,27 +402,21 @@ public class ChessBoardManager : MonoBehaviour
             else
             {
                 CaptureConditionType captureType = CaptureClassifier.Classify(cp, ocp);
-                bool isSacrificeCapture = captureType == CaptureConditionType.Sacrifice;
 
                 ocp.isJailed = true;
+                ocp.idleOwnerTurns = 0;
+                ocp.movedThisTurn = false;
 
                 if (AudioManager.Instance != null)
                 {
-                    if (isSacrificeCapture)
-                    {
-                        AudioManager.Instance.PlaySFX("NangkapSacrificePionSFX");
-                    }
-                    else
-                    {
-                        AudioManager.Instance.PlaySFX("NangkapPionSFX");
-                    }
+                    AudioManager.Instance.PlaySFX("NangkapPionSFX");
                 }
 
                 int jailX = JAIL_COLUMN_X;
                 int jailY;
                 Vector3 capturePos = GetTileCenter(x, y);
 
-                if (GameVfxManager.Instance != null && !isSacrificeCapture)
+                if (GameVfxManager.Instance != null)
                 {
                     GameVfxManager.Instance.PlayCaptureVfx(captureType, capturePos, cp.team);
                 }
@@ -399,7 +437,7 @@ public class ChessBoardManager : MonoBehaviour
                 ocp.currentX = jailX;
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
-                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f, isSacrificeCapture);
+                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f);
                 UpdateTileVisuals(jailX, jailY);
 				
 				// TRIGGER SHAKE: Hanya saat bidak benar-benar menangkap musuh
@@ -419,7 +457,7 @@ public class ChessBoardManager : MonoBehaviour
                 cp.currentY = y;
 
                 BeginMoveDestinationVfx(cp, x, y);
-                cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f, isSacrificeCapture);
+                cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
 
                 UpdateTileVisuals(x, y);
                 UpdateTileVisuals(previousPosition.x, previousPosition.y);
@@ -594,6 +632,8 @@ public class ChessBoardManager : MonoBehaviour
             piece.jailSequenceNumber = 0;
             piece.isGhost = true;
             piece.rechargeCountdown = 4;
+            piece.idleOwnerTurns = 0;
+            piece.movedThisTurn = false;
             piece.SetScale(Vector3.one, true);
         }
 
@@ -786,6 +826,191 @@ public class ChessBoardManager : MonoBehaviour
         generateBoard.PlayDestinationTileFlashWhileMoving(new Vector2Int(destX, destY), cp);
     }
 
+    public void ProcessEndOfOwnerTurn(int team)
+    {
+        if (isGameOver) return;
+
+        List<ChessPiece> teamPieces = new List<ChessPiece>();
+        List<ChessPiece> allPieces = CollectAllPieces();
+        for (int i = 0; i < allPieces.Count; i++)
+        {
+            if (allPieces[i].team == team) teamPieces.Add(allPieces[i]);
+        }
+
+        for (int i = 0; i < teamPieces.Count; i++)
+        {
+            ChessPiece piece = teamPieces[i];
+            if (piece.IsExemptFromAutoReturn())
+            {
+                if (piece.IsOnHomeRow() || piece.isJailed || piece.isGhost)
+                {
+                    piece.idleOwnerTurns = 0;
+                }
+                piece.movedThisTurn = false;
+                continue;
+            }
+
+            if (piece.movedThisTurn)
+            {
+                piece.idleOwnerTurns = 0;
+            }
+            else if (piece.idleOwnerTurns < ChessPiece.AutoReturnOwnerTurns)
+            {
+                piece.idleOwnerTurns++;
+            }
+
+            piece.movedThisTurn = false;
+        }
+
+        for (int i = 0; i < teamPieces.Count; i++)
+        {
+            ChessPiece piece = teamPieces[i];
+            if (piece.IsExemptFromAutoReturn()) continue;
+            if (piece.idleOwnerTurns >= ChessPiece.AutoReturnOwnerTurns)
+            {
+                TryAutoReturnHome(piece);
+            }
+        }
+    }
+
+    private bool BlocksHomeReturn(ChessPiece occupant, ChessPiece mover)
+    {
+        if (occupant == null || occupant == mover) return false;
+        if (occupant.isGhost || occupant.isJailed) return false;
+        return true;
+    }
+
+    private bool CanWalkHomeReturnTile(int x, int y, ChessPiece mover)
+    {
+        if (x < 0 || x >= TILE_WIDTH || y < 0 || y >= TILE_HEIGHT) return false;
+        return !BlocksHomeReturn(chessPieces[x, y], mover);
+    }
+
+    private bool IsHomeReturnDestinationEmpty(int x, int y, ChessPiece mover)
+    {
+        if (x < 0 || x >= TILE_WIDTH || y < 0 || y >= TILE_HEIGHT) return false;
+        ChessPiece occupant = chessPieces[x, y];
+        return occupant == null || occupant == mover;
+    }
+
+    private Vector2Int FindHomeReturnDestination(ChessPiece piece)
+    {
+        int homeRow = ChessPiece.GetHomeRow(piece.team);
+        int preferredX = piece.originalX;
+
+        if (IsHomeReturnDestinationEmpty(preferredX, homeRow, piece))
+        {
+            return new Vector2Int(preferredX, homeRow);
+        }
+
+        int bestX = -1;
+        int bestDist = int.MaxValue;
+        for (int x = 0; x < TILE_WIDTH; x++)
+        {
+            if (!IsHomeReturnDestinationEmpty(x, homeRow, piece)) continue;
+            int dist = Mathf.Abs(x - preferredX);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestX = x;
+            }
+        }
+
+        if (bestX < 0) return new Vector2Int(-1, -1);
+        return new Vector2Int(bestX, homeRow);
+    }
+
+    private List<Vector2Int> FindHomeReturnPath(ChessPiece piece, Vector2Int dest)
+    {
+        Vector2Int start = new Vector2Int(piece.currentX, piece.currentY);
+        if (start == dest) return new List<Vector2Int> { start };
+
+        Vector2Int[] dirs = {
+            new Vector2Int(0, 1), new Vector2Int(0, -1),
+            new Vector2Int(1, 0), new Vector2Int(-1, 0)
+        };
+
+        bool[,] visited = new bool[TILE_WIDTH, TILE_HEIGHT];
+        Vector2Int[,] parent = new Vector2Int[TILE_WIDTH, TILE_HEIGHT];
+        Queue<Vector2Int> queue = new Queue<Vector2Int>();
+
+        visited[start.x, start.y] = true;
+        parent[start.x, start.y] = new Vector2Int(-1, -1);
+        queue.Enqueue(start);
+
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+            if (current == dest) break;
+
+            for (int i = 0; i < dirs.Length; i++)
+            {
+                int nx = current.x + dirs[i].x;
+                int ny = current.y + dirs[i].y;
+                if (nx < 0 || nx >= TILE_WIDTH || ny < 0 || ny >= TILE_HEIGHT) continue;
+                if (visited[nx, ny]) continue;
+
+                if (nx == dest.x && ny == dest.y)
+                {
+                    if (!IsHomeReturnDestinationEmpty(nx, ny, piece)) continue;
+                }
+                else if (!CanWalkHomeReturnTile(nx, ny, piece))
+                {
+                    continue;
+                }
+
+                visited[nx, ny] = true;
+                parent[nx, ny] = current;
+                queue.Enqueue(new Vector2Int(nx, ny));
+            }
+        }
+
+        if (!visited[dest.x, dest.y]) return null;
+
+        List<Vector2Int> path = new List<Vector2Int>();
+        Vector2Int walk = dest;
+        while (walk.x >= 0)
+        {
+            path.Add(walk);
+            walk = parent[walk.x, walk.y];
+        }
+        path.Reverse();
+        return path;
+    }
+
+    private void TryAutoReturnHome(ChessPiece piece)
+    {
+        if (piece == null || piece.IsExemptFromAutoReturn()) return;
+
+        Vector2Int dest = FindHomeReturnDestination(piece);
+        if (dest.x < 0) return;
+
+        List<Vector2Int> path = FindHomeReturnPath(piece, dest);
+        if (path == null || path.Count == 0) return;
+
+        Vector2Int previous = new Vector2Int(piece.currentX, piece.currentY);
+        chessPieces[previous.x, previous.y] = null;
+        chessPieces[dest.x, dest.y] = piece;
+        piece.currentX = dest.x;
+        piece.currentY = dest.y;
+        piece.idleOwnerTurns = 0;
+
+        List<Vector3> worldPath = new List<Vector3>(path.Count);
+        for (int i = 0; i < path.Count; i++)
+        {
+            worldPath.Add(GetTileCenter(path[i].x, path[i].y));
+        }
+
+        piece.AnimateHomeReturn(worldPath);
+        UpdateTileVisuals(previous.x, previous.y);
+        UpdateTileVisuals(dest.x, dest.y);
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateChargeList(chessPieces);
+        }
+    }
+
     private void ProcessTurnLogic(bool isWhiteTurn)
     {
         for (int x = 0; x < TILE_WIDTH; x++)
@@ -802,6 +1027,10 @@ public class ChessBoardManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (turnManager != null) turnManager.OnTurnChanged -= ProcessTurnLogic;
+        if (turnManager != null)
+        {
+            turnManager.OnTurnChanged -= ProcessTurnLogic;
+            turnManager.OnOwnerTurnEnding -= ProcessEndOfOwnerTurn;
+        }
     }
 }

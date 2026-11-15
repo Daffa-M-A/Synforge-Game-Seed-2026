@@ -240,15 +240,28 @@ public void OpenPauseMenu()
         }
 
         System.Collections.Generic.List<ChessPiece> allPieces = new System.Collections.Generic.List<ChessPiece>();
-        for (int x = 0; x < 8; x++) 
+        System.Collections.Generic.HashSet<ChessPiece> seen = new System.Collections.Generic.HashSet<ChessPiece>();
+
+        void AddChargedFrom(ChessPiece[,] grid)
         {
-            for (int y = 0; y < 16; y++) 
+            if (grid == null) return;
+            for (int x = 0; x < 8; x++)
             {
-                if (activePieces[x, y] != null && !activePieces[x, y].isGhost && activePieces[x, y].orderCharge > 0)
+                for (int y = 0; y < 16; y++)
                 {
-                    allPieces.Add(activePieces[x, y]);
+                    ChessPiece piece = grid[x, y];
+                    if (piece != null && !piece.isGhost && piece.orderCharge > 0 && seen.Add(piece))
+                    {
+                        allPieces.Add(piece);
+                    }
                 }
             }
+        }
+
+        AddChargedFrom(activePieces);
+        if (ChessBoardManager.Instance != null)
+        {
+            AddChargedFrom(ChessBoardManager.Instance.prisonerPieces);
         }
 
         if (allPieces.Count == 0)
