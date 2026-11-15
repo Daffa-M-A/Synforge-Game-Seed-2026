@@ -95,8 +95,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f983863a7e134dd49a47715db274559e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
+  redTeamIcons:
+  - {fileID: 2800000, guid: 542a55da4531cf14fa59c11ff051a66a, type: 3}
+  - {fileID: 2800000, guid: 7ec2921c2e4a2f84b8a71d9d50e3797c, type: 3}
+  - {fileID: 2800000, guid: 3c2de9aba72b1a647a8bb675d7448a34, type: 3}
+  - {fileID: 2800000, guid: 2b5d7bdea118f7c4eaee39c042742e12, type: 3}
+  - {fileID: 2800000, guid: d64c4c6967edbed4e9a29df283819518, type: 3}
+  - {fileID: 2800000, guid: 40d50457ac841a147bdb11e69ed381fe, type: 3}
+  blueTeamIcons:
+  - {fileID: 2800000, guid: 41924ad64dbbbc642a5cb4c9bb77421a, type: 3}
+  - {fileID: 2800000, guid: 4f16cb64c268b5b4c9baecb9710fc32f, type: 3}
+  - {fileID: 2800000, guid: 3cad33f3ef677ed46ab2bb003ba474ba, type: 3}
+  - {fileID: 2800000, guid: 805185b3e2e55f8428b9493635684321, type: 3}
+  - {fileID: 2800000, guid: cd3a0c013da3a4345b607f2f77a5f2a3, type: 3}
+  - {fileID: 2800000, guid: ac284789c38ce5f43a04fa7818c8b0b0, type: 3}
 --- !u!1 &5069662337157896221
 GameObject:
   m_ObjectHideFlags: 0
