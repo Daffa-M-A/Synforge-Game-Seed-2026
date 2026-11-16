@@ -276,7 +276,8 @@ public void OpenPauseMenu()
                 chargeOrderContent.parent.parent.gameObject.SetActive(true); 
         }
 
-        allPieces.Sort((a, b) => b.orderCharge.CompareTo(a.orderCharge));
+        // Yang paling baru charge (nomor urut terbesar) di paling atas.
+        allPieces.Sort((a, b) => b.chargeSequence.CompareTo(a.chargeSequence));
 
         for (int i = 0; i < allPieces.Count; i++)
         {
@@ -285,7 +286,7 @@ public void OpenPauseMenu()
 
             if (logItem != null)
             {
-                logItem.SetupData(i + 1, allPieces[i].pieceName, allPieces[i].orderCharge);
+                logItem.SetupData(allPieces[i]);
             }
         }
     }
@@ -336,15 +337,118 @@ public void OpenPauseMenu()
         SceneManager.LoadScene(sceneName);
     }
 
+    [Header("Game Over Victory Icons")]
+    [Tooltip("Ikon kemenangan tim merah (team 0 / White).")]
+    public Texture2D victoryIconRed;
+    [Tooltip("Ikon kemenangan tim biru (team 1 / Black).")]
+    public Texture2D victoryIconBlue;
+    [Tooltip("Tinggi ikon di tengah panel (lebar mengikuti rasio gambar).")]
+    public float victoryIconHeight = 320f;
+    public string redWinRibbonText = "Tim Merah Menang";
+    public string blueWinRibbonText = "Tim Biru Menang";
+    public string drawRibbonText = "Seri";
+
     public void ShowGameOverUI(int resultTeam)
     {
         if (winPanel != null) winPanel.SetActive(false);
         if (losePanel != null) losePanel.SetActive(false);
         if (drawPanel != null) drawPanel.SetActive(false);
 
-        if (resultTeam == 0 && winPanel != null) winPanel.SetActive(true);
-        else if (resultTeam == 1 && losePanel != null) losePanel.SetActive(true);
-        else if (resultTeam == -1 && drawPanel != null) drawPanel.SetActive(true);
+        GameObject active = null;
+        if (resultTeam == 0) active = winPanel;
+        else if (resultTeam == 1) active = losePanel;
+        else if (resultTeam == -1) active = drawPanel;
+
+        if (active == null) return;
+        SetupGameOverPanel(active, resultTeam);
+        active.SetActive(true);
+    }
+
+    // Mengisi ribbon "Team Win(TMP)", menyembunyikan Panel Blue/Panel Red beserta teks N/A,
+    // lalu menaruh VictoryIcon tim pemenang di tengah container "Panels".
+    private void SetupGameOverPanel(GameObject root, int resultTeam)
+    {
+        Transform[] all = root.GetComponentsInChildren<Transform>(true);
+
+        Transform iconContainer = null;
+        foreach (Transform t in all)
+        {
+            if (t.name == "Panel Blue" || t.name == "Panel Red")
+            {
+                t.gameObject.SetActive(false);
+                iconContainer = t.parent;
+            }
+        }
+
+        // Teks "VS" disembunyikan dan posisinya dipakai sebagai tempat ikon kemenangan.
+        RectTransform vsRect = null;
+        foreach (TextMeshProUGUI tmp in root.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            string txt = tmp.text != null ? tmp.text.Trim() : "";
+
+            if (tmp.name == "Team Win(TMP)")
+            {
+                tmp.text = resultTeam == 0 ? redWinRibbonText
+                         : resultTeam == 1 ? blueWinRibbonText
+                         : drawRibbonText;
+                tmp.gameObject.SetActive(true);
+            }
+            else if (txt == "N/A")
+            {
+                tmp.gameObject.SetActive(false);
+            }
+            else if (string.Equals(txt, "VS", System.StringComparison.OrdinalIgnoreCase))
+            {
+                tmp.gameObject.SetActive(false);
+                vsRect = tmp.rectTransform;
+            }
+        }
+
+        if (vsRect != null) iconContainer = vsRect.parent;
+        if (iconContainer == null) return;
+
+        Texture2D tex = resultTeam == 0 ? victoryIconRed : resultTeam == 1 ? victoryIconBlue : null;
+
+        Transform existing = iconContainer.Find("VictoryIcon");
+        if (tex == null)
+        {
+            if (existing != null) existing.gameObject.SetActive(false);
+            return;
+        }
+
+        UnityEngine.UI.RawImage img;
+        if (existing != null)
+        {
+            img = existing.GetComponent<UnityEngine.UI.RawImage>();
+        }
+        else
+        {
+            GameObject go = new GameObject("VictoryIcon", typeof(RectTransform), typeof(UnityEngine.UI.RawImage));
+            go.transform.SetParent(iconContainer, false);
+            img = go.GetComponent<UnityEngine.UI.RawImage>();
+        }
+
+        RectTransform rt = img.rectTransform;
+        if (vsRect != null)
+        {
+            // Tepat di tempat "VS" tadi berada
+            rt.anchorMin = vsRect.anchorMin;
+            rt.anchorMax = vsRect.anchorMax;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = vsRect.anchoredPosition;
+            rt.SetSiblingIndex(vsRect.GetSiblingIndex() + 1);
+        }
+        else
+        {
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+        }
+        rt.sizeDelta = new Vector2(victoryIconHeight * tex.width / tex.height, victoryIconHeight);
+
+        img.texture = tex;
+        img.raycastTarget = false;
+        img.gameObject.SetActive(true);
     }
 
     public void OnReplayClicked()

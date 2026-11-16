@@ -32,6 +32,8 @@ public class ChessBoardManager : MonoBehaviour
     public const int TILE_WIDTH = 8;
     public const int TILE_HEIGHT = 16;
     public int globalChargeCounter = 0;
+    // Counter urutan charge seumur match untuk nomor di Charge Log (01, 02, ... 23, ...).
+    public int chargeSequenceCounter = 0;
     public bool isGameOver = false;
     public Vector3 bounds { get; private set; }
     public static ChessBoardManager Instance;
@@ -178,6 +180,7 @@ public class ChessBoardManager : MonoBehaviour
         whiteJailCount = 0;
         blackJailCount = 0;
         globalChargeCounter = 0;
+        chargeSequenceCounter = 0;
 
         void SpawnFromSetup(List<PieceSetup> setups)
         {
@@ -185,6 +188,8 @@ public class ChessBoardManager : MonoBehaviour
             {
                 ChessPiece cp = SpawnSinglePiece(setup.pieceType, setup.team);
                 cp.orderCharge = setup.customChargeOrder;
+                cp.chargeSequence = setup.customChargeOrder;
+                if (setup.customChargeOrder > chargeSequenceCounter) chargeSequenceCounter = setup.customChargeOrder;
                 cp.SaveOriginalPosition(setup.startPos.x, setup.startPos.y);
                 int homeRow = ChessPiece.GetHomeRow(setup.team);
                 if (setup.startPos.y != homeRow || setup.customChargeOrder > 0)
@@ -348,6 +353,7 @@ public class ChessBoardManager : MonoBehaviour
 
         resettingPiece.orderCharge = others.Count + 1;
         globalChargeCounter = resettingPiece.orderCharge;
+        resettingPiece.chargeSequence = ++chargeSequenceCounter;
     }
 
     private void OnPieceLandedOnHomeRow(ChessPiece cp)
@@ -394,6 +400,8 @@ public class ChessBoardManager : MonoBehaviour
 
         cp.MarkMovedThisTurn();
 
+        // Shake kecil saat bidak hinggap menyentuh kawannya yang tawanan
+        bool releasedPrisoner = false;
         if (prisonerPieces[x, y] != null)
         {
             ChessPiece prisoner = prisonerPieces[x, y];
@@ -401,6 +409,7 @@ public class ChessBoardManager : MonoBehaviour
             if (prisoner.team == cp.team)
             {
                 ReleaseChain(prisoner.team, prisoner.jailSequenceNumber);
+                releasedPrisoner = true;
             }
         }
 
@@ -420,19 +429,9 @@ public class ChessBoardManager : MonoBehaviour
                 ocp.idleOwnerTurns = 0;
                 ocp.movedThisTurn = false;
 
-                if (AudioManager.Instance != null)
-                {
-                    AudioManager.Instance.PlaySFX("NangkapPionSFX");
-                }
-
                 int jailX = JAIL_COLUMN_X;
                 int jailY;
                 Vector3 capturePos = GetTileCenter(x, y);
-
-                if (GameVfxManager.Instance != null)
-                {
-                    GameVfxManager.Instance.PlayCaptureVfx(captureType, capturePos, cp.team);
-                }
 
                 int sequence = GetNextJailSequence(ocp.team);
                 ocp.jailSequenceNumber = sequence;
@@ -447,15 +446,12 @@ public class ChessBoardManager : MonoBehaviour
                     jailY = sequence;
                 }
 
+                // State logis penjara diset sekarang; visualnya (SFX, VFX, lari ke penjara, shake)
+                // baru dimainkan setelah bidak penangkap hinggap di tile musuh.
                 ocp.currentX = jailX;
                 ocp.currentY = jailY;
                 prisonerPieces[jailX, jailY] = ocp;
-                ocp.AnimateCaptureToPrison(capturePos, GetTileCenter(jailX, jailY), 8f);
-                UpdateTileVisuals(jailX, jailY);
-				
-				// TRIGGER SHAKE: Hanya saat bidak benar-benar menangkap musuh
-                CameraController cam = Camera.main.GetComponent<CameraController>();
-                if (cam != null) cam.TriggerShake();
+                Vector3 jailPos = GetTileCenter(jailX, jailY);
 
                 if (UIManager.Instance != null)
                 {
@@ -469,8 +465,25 @@ public class ChessBoardManager : MonoBehaviour
                 cp.currentX = x;
                 cp.currentY = y;
 
+                int captorTeam = cp.team;
                 BeginMoveDestinationVfx(cp, x, y);
-                cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
+                cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f, false, () =>
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("NangkapPionSFX");
+
+                    if (GameVfxManager.Instance != null)
+                        GameVfxManager.Instance.PlayCaptureVfx(captureType, capturePos, captorTeam);
+
+                    // Kalau tawanan ini sudah keburu dibebaskan sebelum penangkap hinggap, jangan dilarikan ke penjara.
+                    if (ocp != null && ocp.isJailed)
+                    {
+                        ocp.AnimateCaptureToPrison(capturePos, jailPos, 8f);
+                        UpdateTileVisuals(jailX, jailY);
+                    }
+
+                    // TRIGGER SHAKE: tepat saat penangkap hinggap di tile musuh
+                    TriggerCameraShake(1f);
+                });
 
                 UpdateTileVisuals(x, y);
                 UpdateTileVisuals(previousPosition.x, previousPosition.y);
@@ -499,7 +512,15 @@ public class ChessBoardManager : MonoBehaviour
         cp.currentY = y;
 
         BeginMoveDestinationVfx(cp, x, y);
-        cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
+        if (releasedPrisoner)
+        {
+            // Shake kecil saat hinggap menyentuh kawan yang tawanan
+            cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f, false, () => TriggerCameraShake(releaseShakeMultiplier));
+        }
+        else
+        {
+            cp.MoveWithAnimation(startPos, endPos, 0.15f, 6f);
+        }
 
         UpdateTileVisuals(x, y);
         UpdateTileVisuals(previousPosition.x, previousPosition.y);
@@ -761,6 +782,17 @@ public class ChessBoardManager : MonoBehaviour
 
         if (team == 0) whiteJailCount = remaining.Count;
         else blackJailCount = remaining.Count;
+    }
+
+    [Header("Camera Shake")]
+    [Tooltip("Pengali kekuatan shake saat membebaskan tawanan (1 = sama dengan shake tangkap).")]
+    public float releaseShakeMultiplier = 0.4f;
+
+    private void TriggerCameraShake(float multiplier)
+    {
+        if (Camera.main == null) return;
+        CameraController cam = Camera.main.GetComponent<CameraController>();
+        if (cam != null) cam.TriggerShake(multiplier);
     }
 
     private int GetNextJailSequence(int team)

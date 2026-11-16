@@ -14,6 +14,8 @@ public class ChessPiece : MonoBehaviour
     public int currentY;
     public ChessPieceType type;
     public int orderCharge = 0;
+    // Nomor urut seumur match: bertambah setiap kali bidak charge (tidak pernah dipadatkan, tanpa batas).
+    public int chargeSequence = 0;
     public string pieceName;
     public string roleName;
 
@@ -363,12 +365,13 @@ public class ChessPiece : MonoBehaviour
         isAnimating = false;
     }
 
-    public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f, bool sacrificeFlash = false)
+    // onArrived dipanggil tepat saat bidak hinggap di tile tujuan (sebelum isAnimating dilepas).
+    public void MoveWithAnimation(Vector3 startPos, Vector3 endPos, float delay = 0.15f, float speed = 15f, bool sacrificeFlash = false, System.Action onArrived = null)
     {
-        StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed, sacrificeFlash));
+        StartCoroutine(AnimateMoveCoroutine(startPos, endPos, delay, speed, sacrificeFlash, onArrived));
     }
 
-    private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed, bool sacrificeFlash)
+    private IEnumerator AnimateMoveCoroutine(Vector3 startPos, Vector3 endPos, float delay, float speed, bool sacrificeFlash, System.Action onArrived = null)
     {
         isAnimating = true;
         transform.position = startPos;
@@ -383,6 +386,8 @@ public class ChessPiece : MonoBehaviour
         SetAnimatorWalking(false);
         StopColorFlash();
         transform.rotation = Quaternion.LookRotation(GetTeamIdleFacing(team));
+
+        onArrived?.Invoke();
 
         isAnimating = false;
     }
@@ -590,6 +595,68 @@ public class ChessPiece : MonoBehaviour
         ReleaseFlashMaterials();
     }
 
+    // ---- Threat glow (dipakai InputHandler saat hover drag) ----
+    // Glow merah steady: hanya emission yang dinaikkan sehingga tekstur asli tetap terlihat
+    // (kesan semi transparan). Tidak mengganggu flash lain: flash baru otomatis membatalkan glow.
+    private bool threatGlowActive = false;
+    public bool IsThreatGlowActive => threatGlowActive;
+
+    public void SetThreatGlow(bool on, Color glowColor, float intensity = 1.5f)
+    {
+        if (on)
+        {
+            if (threatGlowActive) return;
+            if (colorFlashRoutine != null || rechargeFlashRoutine != null) return;
+
+            PrepareFlashEntries();
+            ApplyEmissionGlow(glowColor, intensity);
+            threatGlowActive = true;
+        }
+        else
+        {
+            if (!threatGlowActive) return;
+            threatGlowActive = false;
+
+            // Kalau ada flash lain yang sudah mengambil alih material, jangan disentuh.
+            if (colorFlashRoutine != null || rechargeFlashRoutine != null) return;
+
+            ClearTint();
+            ReleaseFlashMaterials();
+        }
+    }
+
+    private void ApplyEmissionGlow(Color glow, float intensity)
+    {
+        Color emission = glow * intensity;
+        emission.a = 1f;
+
+        for (int i = 0; i < flashEntries.Count; i++)
+        {
+            RendererFlashEntry entry = flashEntries[i];
+            if (entry.Renderer == null) continue;
+
+            Material[] flashMats = entry.FlashMaterials;
+            for (int m = 0; m < flashMats.Length; m++)
+            {
+                Material mat = flashMats[m];
+                if (mat == null) continue;
+
+                if (mat.HasProperty(EmissionColorId))
+                {
+                    mat.SetColor(EmissionColorId, emission);
+                }
+                else
+                {
+                    // Material tanpa emission: campur warna dasar dengan merah setengah.
+                    int id = mat.HasProperty(BaseColorId) ? BaseColorId : mat.HasProperty(ColorId) ? ColorId : -1;
+                    if (id != -1) mat.SetColor(id, Color.Lerp(mat.GetColor(id), glow, 0.5f));
+                }
+            }
+
+            entry.Renderer.materials = flashMats;
+        }
+    }
+
     private IEnumerator ColorFlashRoutine(Color flashColor, float interval)
     {
         bool showFlash = false;
@@ -605,6 +672,7 @@ public class ChessPiece : MonoBehaviour
     private void PrepareFlashEntries()
     {
         ReleaseFlashMaterials();
+        threatGlowActive = false; // flash apa pun yang baru mengambil alih material membatalkan glow
 
         Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
         for (int i = 0; i < renderers.Length; i++)

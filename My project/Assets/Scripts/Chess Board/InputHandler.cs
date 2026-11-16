@@ -11,10 +11,17 @@ public class InputHandler : MonoBehaviour
     [Header("Settings")]
     public float dragOffSet = 1.25f;
 
+    [Header("Threat Glow (hover saat drag)")]
+    [Tooltip("Warna glow musuh yang bisa memakan bidak kita di tile yang sedang di-hover.")]
+    public Color threatGlowColor = new Color(1f, 0.15f, 0.1f, 1f);
+    [Tooltip("Kekuatan emission glow.")]
+    public float threatGlowIntensity = 1.5f;
+
     private Camera currentCamera;
     private Vector2Int currentHover = -Vector2Int.one;
     private ChessPiece currentlyDragging;
     private List<Vector2Int> availableMove = new List<Vector2Int>();
+    private readonly List<ChessPiece> glowingThreats = new List<ChessPiece>();
 
     private void Update()
     {
@@ -60,8 +67,9 @@ public class InputHandler : MonoBehaviour
                 int currentTeam = currentlyDragging != null ? currentlyDragging.team : -1;
                 generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, currentTeam);
                 currentHover = -Vector2Int.one;
+                ClearThreatGlow();
             }
-            return; 
+            return;
         }
 
         int team = currentlyDragging != null ? currentlyDragging.team : -1;
@@ -72,13 +80,106 @@ public class InputHandler : MonoBehaviour
             {
                 generateBoard.UpdateHoverState(currentHover, hoveredTile, availableMove, boardManager.chessPieces, team);
                 currentHover = hoveredTile;
+                UpdateThreatGlow(hoveredTile);
             }
         }
         else if (currentHover != -Vector2Int.one)
         {
             generateBoard.UpdateHoverState(currentHover, -Vector2Int.one, availableMove, boardManager.chessPieces, team);
             currentHover = -Vector2Int.one;
+            ClearThreatGlow();
         }
+    }
+
+    // ---- Threat glow ----
+    // Saat drag dan hover di tile yang legal, simulasikan bidak berada di tile itu,
+    // lalu nyalakan glow merah pada semua musuh yang bisa memakannya di sana.
+    private void UpdateThreatGlow(Vector2Int tile)
+    {
+        List<ChessPiece> threats = null;
+
+        if (currentlyDragging != null && tile != -Vector2Int.one && boardManager.ContainsValidMove(availableMove, tile))
+        {
+            threats = FindThreatsAt(currentlyDragging, tile);
+        }
+
+        // Matikan yang tidak lagi mengancam
+        for (int i = glowingThreats.Count - 1; i >= 0; i--)
+        {
+            ChessPiece p = glowingThreats[i];
+            if (p == null || threats == null || !threats.Contains(p))
+            {
+                if (p != null) p.SetThreatGlow(false, threatGlowColor);
+                glowingThreats.RemoveAt(i);
+            }
+        }
+
+        if (threats == null) return;
+
+        // Nyalakan yang baru
+        for (int i = 0; i < threats.Count; i++)
+        {
+            ChessPiece p = threats[i];
+            if (!glowingThreats.Contains(p))
+            {
+                p.SetThreatGlow(true, threatGlowColor, threatGlowIntensity);
+                glowingThreats.Add(p);
+            }
+        }
+    }
+
+    private void ClearThreatGlow()
+    {
+        for (int i = 0; i < glowingThreats.Count; i++)
+        {
+            if (glowingThreats[i] != null) glowingThreats[i].SetThreatGlow(false, threatGlowColor);
+        }
+        glowingThreats.Clear();
+    }
+
+    private List<ChessPiece> FindThreatsAt(ChessPiece mover, Vector2Int dest)
+    {
+        List<ChessPiece> threats = new List<ChessPiece>();
+        ChessPiece[,] board = boardManager.chessPieces;
+        if (board == null) return threats;
+
+        int w = ChessBoardManager.TILE_WIDTH;
+        int h = ChessBoardManager.TILE_HEIGHT;
+
+        // Simulasi: pindahkan bidak ke tile tujuan (bidak musuh di tile itu dianggap sudah dimakan).
+        int origX = mover.currentX, origY = mover.currentY;
+        ChessPiece displaced = board[dest.x, dest.y];
+
+        board[origX, origY] = null;
+        board[dest.x, dest.y] = mover;
+        mover.currentX = dest.x;
+        mover.currentY = dest.y;
+
+        try
+        {
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    ChessPiece enemy = board[x, y];
+                    if (enemy == null || enemy == mover || enemy.team == mover.team) continue;
+                    if (enemy.isJailed || enemy.isGhost) continue;
+
+                    List<Vector2Int> enemyMoves = enemy.GetAvailableMoves(ref board, w, h);
+                    if (enemyMoves.Contains(dest)) threats.Add(enemy);
+                }
+            }
+        }
+        finally
+        {
+            // Kembalikan papan ke keadaan semula
+            mover.currentX = origX;
+            mover.currentY = origY;
+            board[dest.x, dest.y] = displaced;
+            board[origX, origY] = mover;
+        }
+
+        return threats;
     }
 
     private void HandleClick(bool hasTileUnderMouse, Vector2Int hoveredTile)
@@ -128,6 +229,9 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0))
         {
+            // Glow ancaman harus mati sebelum bidak bergerak/flash lain dimulai
+            ClearThreatGlow();
+
             // LOGIKA PERGERAKAN: Hanya dijalankan jika kita sedang men-drag bidak (Bidak Kawan)
             if (currentlyDragging != null)
             {
