@@ -128,8 +128,7 @@ public class ChessBoardManager : MonoBehaviour
 
         // Give name from list of names in the text file
         string randomName = availableNames[Random.Range(0, availableNames.Length)];
-        string teamPrefix = (team == 0) ? "[A]" : "[B]";
-        cp.pieceName = $"{teamPrefix} {randomName}";
+        cp.pieceName = randomName;
 
         // Give role name based on the type of chess piece
         switch (type)

@@ -84,7 +84,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &4579799350200876942
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,8 +95,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f983863a7e134dd49a47715db274559e, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   redTeamIcons:
   - {fileID: 2800000, guid: 542a55da4531cf14fa59c11ff051a66a, type: 3}
   - {fileID: 2800000, guid: 7ec2921c2e4a2f84b8a71d9d50e3797c, type: 3}
@@ -111,6 +111,25 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 805185b3e2e55f8428b9493635684321, type: 3}
   - {fileID: 2800000, guid: cd3a0c013da3a4345b607f2f77a5f2a3, type: 3}
   - {fileID: 2800000, guid: ac284789c38ce5f43a04fa7818c8b0b0, type: 3}
+  iconHeight: 62
+  heightOffset: 1
+  stackTopOffset: 40
+  gapIconToName: 6
+  gapNameToBar: 8
+  gapBarToDistance: 8
+  nameFontSize: 24
+  nameColor: {r: 1, g: 1, b: 1, a: 1}
+  segmentSize: {x: 40, y: 14}
+  segmentSpacing: 8
+  fullColor: {r: 1, g: 0.8862745, b: 0.47843137, a: 1}
+  midColor: {r: 1, g: 0.62352943, b: 0.2627451, a: 1}
+  lowColor: {r: 1, g: 0.3019608, b: 0.3019608, a: 1}
+  emptyColor: {r: 0, g: 0, b: 0, a: 0.45}
+  distanceFontSize: 24
+  farColor: {r: 1, g: 0.3019608, b: 0.3019608, a: 1}
+  middleColor: {r: 1, g: 0.62352943, b: 0.2627451, a: 1}
+  nearColor: {r: 0.36078432, g: 0.9019608, b: 0.36078432, a: 1}
+  diagonalCountsAsOne: 0
 --- !u!1 &5069662337157896221
 GameObject:
   m_ObjectHideFlags: 0
