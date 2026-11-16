@@ -351,6 +351,14 @@ public class ChessBoardManager : MonoBehaviour
         globalChargeCounter = resettingPiece.orderCharge;
     }
 
+    private void OnPieceLandedOnHomeRow(ChessPiece cp)
+    {
+        if (cp == null) return;
+        UpdateOrderCharge(cp);
+        cp.PlayRechargeRankVfx();
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("ReChargeSFX");
+    }
+
 		public bool MoveTo(ChessPiece cp, int x, int y, List<Vector2Int> availableMove)
 			{
 				if (!ContainsValidMove(availableMove, new Vector2Int(x, y))) return false;
@@ -371,12 +379,18 @@ public class ChessBoardManager : MonoBehaviour
         bool wasInBase = (previousPosition.y == baseRow);
         bool isMovingOut = (y != baseRow);
 
+        bool isMovingIn = (!wasInBase && y == baseRow);
+
         if (wasInBase && isMovingOut)
         {
             cp.hasLeftHomeRow = true;
-            UpdateOrderCharge(cp);
-            cp.PlayRechargeRankVfx();
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("ReChargeSFX");            
+            // Bidak yang belum pernah charge (awal permainan) dapat urutan saat pertama keluar
+            if (cp.orderCharge == 0) OnPieceLandedOnHomeRow(cp);
+        }
+        else if (isMovingIn)
+        {
+            // Urutan charge terupdate setiap hinggap di petak charge
+            OnPieceLandedOnHomeRow(cp);
         }
 
         cp.MarkMovedThisTurn();
@@ -771,6 +785,9 @@ public class ChessBoardManager : MonoBehaviour
         piece.currentY = targetY;
         chessPieces[targetX, targetY] = piece;
 
+        // Tahanan yang dibebaskan hinggap di petak charge: urutan charge terupdate
+        if (targetY == ChessPiece.GetHomeRow(piece.team)) UpdateOrderCharge(piece);
+
         Vector3 startPos = GetTileCenter(jailPos.x, jailPos.y);
         Vector3 finalPos = GetTileCenter(targetX, targetY);
 
@@ -994,6 +1011,7 @@ public class ChessBoardManager : MonoBehaviour
         piece.currentX = dest.x;
         piece.currentY = dest.y;
         piece.idleOwnerTurns = 0;
+        if (dest.y == ChessPiece.GetHomeRow(piece.team)) OnPieceLandedOnHomeRow(piece);
 
         List<Vector3> worldPath = new List<Vector3>(path.Count);
         for (int i = 0; i < path.Count; i++)

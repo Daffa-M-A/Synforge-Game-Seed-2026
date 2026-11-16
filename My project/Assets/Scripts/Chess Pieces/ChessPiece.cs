@@ -175,9 +175,9 @@ public class ChessPiece : MonoBehaviour
         if (isGhost || isJailed) return false;
         if (enemy.isGhost || enemy.isJailed) return false;
 
-        bool victimOnEnemyFortress = IsEnemyFortressTile(team, enemy.currentX, enemy.currentY);
-        if (orderCharge >= 1 && enemy.orderCharge == 0 && victimOnEnemyFortress)
-            return true;
+        // Bidak yang sedang berada di petak charge (home row, termasuk petak benteng) kebal.
+        // Petak benteng yang ditempati bidak musuh berarti terblokir, tidak bisa dimasuki.
+        if (enemy.IsOnHomeRow()) return false;
 
         if (orderCharge < 1 || enemy.orderCharge < 1) return false;
         return orderCharge > enemy.orderCharge;
