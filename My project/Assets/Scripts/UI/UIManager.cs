@@ -92,7 +92,7 @@ public class UIManager : MonoBehaviour
                 boardManager.blackJailCount);
         }
 
-        HidePieceInfo();
+        SetupZoneTracker();
     }
 
     private void ResolveDependencies()
@@ -107,6 +107,10 @@ public class UIManager : MonoBehaviour
         if (turnManager != null)
         {
             turnManager.OnTurnChanged -= UpdateTurnUI;
+        }
+        if (boardManager != null)
+        {
+            boardManager.OnZonePointsChanged -= OnZonePointsChanged;
         }
     }
 
@@ -160,6 +164,8 @@ public class UIManager : MonoBehaviour
 
         if (turnCountText != null && turnManager != null)
             turnCountText.text = $"TURN {turnManager.currentTurnCount}";
+
+        RefreshZoneTracker();
     }
     
 public void OpenPauseMenu()
@@ -305,16 +311,146 @@ public void OpenPauseMenu()
         turnTimerText.text = Mathf.CeilToInt(timeRemaining).ToString() + "s";
     }
 
-    public void ShowPieceInfo(ChessPiece piece)
+    // Panel "Pawn Information" lama sekarang menjadi UI Zone Domination Tracker dan selalu tampil,
+    // jadi klik bidak tidak lagi mengubah isinya.
+    public void ShowPieceInfo(ChessPiece piece) { }
+
+    public void HidePieceInfo() { }
+
+    // ---- UI Zone Domination Tracker ----
+    [Header("Zone Domination Tracker")]
+    public string redZoneLabel = "Red Team: Zone Domination Points";
+    public string blueZoneLabel = "Blue Team: Zone Domination Points";
+    public Color zoneBarRedColor = new Color32(0xC0, 0x52, 0x4A, 0xFF);
+    public Color zoneBarBlueColor = new Color32(0x57, 0x9E, 0xDB, 0xFF);
+    public Color zoneBarBackgroundColor = new Color(0f, 0f, 0f, 0.35f);
+    [Tooltip("Tinggi bar di tempat teks Pawn Type lama.")]
+    public float zoneBarHeight = 22f;
+
+    private UnityEngine.UI.Image zoneBarFill;
+    private RectTransform zoneBarFillRect;
+    private TextMeshProUGUI zoneBarValueText;
+    private bool zoneTrackerReady = false;
+
+    private GameObject ResolveZoneTrackerPanel()
     {
-        if (pieceInfoPanel != null) pieceInfoPanel.SetActive(true);
-        if (pieceNameText != null) pieceNameText.text = piece.pieceName;
-        if (pieceRoleText != null) pieceRoleText.text = piece.roleName;
+        if (pieceInfoPanel != null) return pieceInfoPanel;
+
+        foreach (Transform t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (t.name == "UI Zone Domination Tracker" || t.name == "Pawn Information")
+                return t.gameObject;
+        }
+        return null;
     }
 
-    public void HidePieceInfo()
+    private void SetupZoneTracker()
     {
-        if (pieceInfoPanel != null) pieceInfoPanel.SetActive(false);
+        if (zoneTrackerReady) return;
+
+        GameObject panel = ResolveZoneTrackerPanel();
+        if (panel == null) return;
+        pieceInfoPanel = panel;
+        panel.name = "UI Zone Domination Tracker";
+
+        TextMeshProUGUI[] texts = panel.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (TextMeshProUGUI t in texts)
+        {
+            if (pieceNameText == null && t.name == "Pawn Name") pieceNameText = t;
+            if (pieceRoleText == null && t.name == "Pawn Type") pieceRoleText = t;
+        }
+
+        if (pieceRoleText != null)
+        {
+            // Bar menggantikan teks Pawn Type: rect yang sama, dipotong setinggi zoneBarHeight.
+            RectTransform src = pieceRoleText.rectTransform;
+            pieceRoleText.gameObject.SetActive(false);
+
+            GameObject bgGo = new GameObject("ZoneBarBackground", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+            RectTransform bgRect = bgGo.GetComponent<RectTransform>();
+            bgRect.SetParent(src.parent, false);
+            bgRect.anchorMin = src.anchorMin;
+            bgRect.anchorMax = src.anchorMax;
+            bgRect.pivot = src.pivot;
+            bgRect.anchoredPosition = src.anchoredPosition;
+            bgRect.sizeDelta = src.sizeDelta;
+            bgRect.SetSiblingIndex(src.GetSiblingIndex() + 1);
+
+            // Kunci tinggi bar: ubah anchor vertikal jadi titik tengah rect sumber
+            float midY = 0.5f * (src.anchorMin.y + src.anchorMax.y);
+            bgRect.anchorMin = new Vector2(src.anchorMin.x, midY);
+            bgRect.anchorMax = new Vector2(src.anchorMax.x, midY);
+            bgRect.pivot = new Vector2(0.5f, 0.5f);
+            bgRect.sizeDelta = new Vector2(src.sizeDelta.x, zoneBarHeight);
+            bgRect.anchoredPosition = new Vector2(src.anchoredPosition.x, src.anchoredPosition.y);
+
+            UnityEngine.UI.Image bgImg = bgGo.GetComponent<UnityEngine.UI.Image>();
+            bgImg.color = zoneBarBackgroundColor;
+            bgImg.raycastTarget = false;
+
+            GameObject fillGo = new GameObject("ZoneBarFill", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+            RectTransform fillRect = fillGo.GetComponent<RectTransform>();
+            fillRect.SetParent(bgRect, false);
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = new Vector2(2f, 2f);
+            fillRect.offsetMax = new Vector2(-2f, -2f);
+            zoneBarFill = fillGo.GetComponent<UnityEngine.UI.Image>();
+            zoneBarFill.raycastTarget = false;
+            zoneBarFillRect = fillRect;
+            fillRect.anchorMax = new Vector2(0f, 1f); // lebar isi diatur lewat anchorMax.x
+
+            // Angka "40 / 100" di atas bar, memakai font yang sama dengan Pawn Type
+            zoneBarValueText = Instantiate(pieceRoleText, bgRect);
+            zoneBarValueText.gameObject.SetActive(true);
+            zoneBarValueText.name = "ZoneBarValue";
+            RectTransform vt = zoneBarValueText.rectTransform;
+            vt.anchorMin = Vector2.zero;
+            vt.anchorMax = Vector2.one;
+            vt.offsetMin = Vector2.zero;
+            vt.offsetMax = Vector2.zero;
+            zoneBarValueText.enableAutoSizing = false;
+            zoneBarValueText.fontSize = Mathf.Max(10f, zoneBarHeight * 0.7f);
+            zoneBarValueText.horizontalAlignment = HorizontalAlignmentOptions.Center;
+            zoneBarValueText.verticalAlignment = VerticalAlignmentOptions.Middle;
+            zoneBarValueText.color = Color.white;
+            zoneBarValueText.raycastTarget = false;
+        }
+
+        if (boardManager != null) boardManager.OnZonePointsChanged += OnZonePointsChanged;
+
+        panel.SetActive(true);
+        zoneTrackerReady = true;
+        RefreshZoneTracker();
+    }
+
+    private void OnZonePointsChanged(int team, int total, int delta)
+    {
+        RefreshZoneTracker();
+    }
+
+    // Menampilkan poin tim yang sedang mendapat giliran.
+    private void RefreshZoneTracker()
+    {
+        if (!zoneTrackerReady) return;
+
+        int team = (turnManager == null || turnManager.isWhiteTurn) ? 0 : 1;
+        int max = boardManager != null ? boardManager.zoneWinPoints : 100;
+        int points = boardManager != null ? boardManager.GetZonePoints(team) : 0;
+
+        if (pieceNameText != null) pieceNameText.text = team == 0 ? redZoneLabel : blueZoneLabel;
+
+        if (zoneBarFill != null && zoneBarFillRect != null)
+        {
+            float frac = max > 0 ? Mathf.Clamp01((float)points / max) : 0f;
+            zoneBarFillRect.anchorMax = new Vector2(frac, 1f);
+            zoneBarFillRect.offsetMin = new Vector2(2f, 2f);
+            zoneBarFillRect.offsetMax = new Vector2(frac > 0f ? -2f : 0f, -2f);
+            zoneBarFill.enabled = frac > 0f;
+            zoneBarFill.color = team == 0 ? zoneBarRedColor : zoneBarBlueColor;
+        }
+        if (zoneBarValueText != null) zoneBarValueText.text = $"{points} / {max}";
+        // BG Image (Blue/Red) sengaja dibiarkan apa adanya.
     }
 
     public void StartPvPGame(string sceneName)

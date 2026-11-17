@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc501cfdaf180744d834a5ef90bcb78e, type: 3}
+  m_Name: Tahap 17
+  m_EditorClassIdentifier: 
+  stageTitle: Zone Domination
+  skipEnemyTurn: 0
+  enableTimer: 0
+  showObjectiveHighlight: 1
+  mainInstruction: Masukkan Rook ke zona musuh (petak yang disorot), lalu bertahan di sana selama 1 turn penuh.
+  descriptions:
+  - 'Papan terbagi menjadi dua zona: setengah bagianmu dan setengah bagian musuh.
+
+    Setiap bidakmu yang berhasil bertahan di zona musuh selama 1 turn penuh (giliranmu, giliran musuh, lalu kembali ke giliranmu) menyumbang 1 Zone Domination Point.'
+  - 'Semakin banyak bidak yang bertahan di zona musuh, semakin cepat poin bertambah. 3 bidak yang bertahan berarti 3 poin per turn.
+
+    Bidak yang berada di zona musuh akan menyala ungu dan mengeluarkan asap sebagai penanda.'
+  - 'Poin dicatat pada bar UI Zone Domination Tracker. Tim yang lebih dulu mencapai 100 poin langsung menang.
+
+    Hati-hati, bidak yang terlalu lama diam akan ditarik pulang otomatis dan berhenti menyumbang poin.'
+  playerPieces:
+  - pieceType: 2
+    team: 0
+    startPos: {x: 0, y: 2}
+    customChargeOrder: 1
+    isPrisoner: 0
+  enemyPieces:
+  - pieceType: 3
+    team: 1
+    startPos: {x: 7, y: 15}
+    customChargeOrder: 0
+    isPrisoner: 0
+  forceWhiteTurnOnStart: 1
+  enemyAutoMove: 1
+  disableHighlights: 0
+  objectives:
+  - type: 0
+    pieceToMove: 2
+    targetPos: {x: 0, y: 9}
+  - type: 7
+    pieceToMove: 0
+    targetPos: {x: 0, y: 0}

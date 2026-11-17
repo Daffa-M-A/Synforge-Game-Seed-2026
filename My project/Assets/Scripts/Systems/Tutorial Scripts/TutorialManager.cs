@@ -198,6 +198,10 @@ public class TutorialManager : MonoBehaviour
                 break;
             case TutorialObjective.ObjectiveType.FreePlay:
                 return true;
+
+            case TutorialObjective.ObjectiveType.HoldEnemyZone:
+                // Pemain boleh bergerak bebas sambil menunggu poin masuk; objective selesai lewat NotifyZonePointsAwarded.
+                return true;
         }
 
         if (isMoveCorrect)
@@ -240,6 +244,36 @@ public class TutorialManager : MonoBehaviour
         if (currentObjectiveIndex >= currentData.objectives.Count)
         {
             Invoke("LoadNextStage", 1.5f);
+        }
+    }
+
+    // Dipanggil ChessBoardManager saat sebuah tim mendapat Zone Domination Point.
+    public void NotifyZonePointsAwarded(int team, int pointsGained)
+    {
+        if (!isTutorialActive || !isGameplayPhaseActive) return;
+        if (team != 0 || pointsGained <= 0) return;
+        if (currentStageIndex >= tutorialStages.Length) return;
+
+        TutorialStepData currentData = tutorialStages[currentStageIndex];
+        if (currentData.objectives == null || currentObjectiveIndex >= currentData.objectives.Count) return;
+
+        TutorialObjective currentObj = currentData.objectives[currentObjectiveIndex];
+        if (currentObj.type != TutorialObjective.ObjectiveType.HoldEnemyZone) return;
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(AudioManager.SfxTutorialObjectiveCleared);
+
+        currentObjectiveIndex++;
+
+        if (currentObjectiveIndex >= currentData.objectives.Count)
+        {
+            isGameplayPhaseActive = false;
+            ClearObjectiveHighlight();
+            Invoke("LoadNextStage", 1.5f);
+        }
+        else
+        {
+            UpdateObjectiveHighlight();
         }
     }
 

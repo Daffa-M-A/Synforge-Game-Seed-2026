@@ -95,6 +95,8 @@ public class ChessPiece : MonoBehaviour
         {
             transform.localScale = Vector3.MoveTowards(transform.localScale, desiredScale, MoveSpeed * Time.deltaTime);
         }
+
+        UpdateZoneAura();
     }
 
     // Used for returning the piece after released from jail
@@ -147,6 +149,44 @@ public class ChessPiece : MonoBehaviour
     public bool IsOnHomeRow()
     {
         return currentY == GetHomeRow(team);
+    }
+
+    // ---- Zone Domination ----
+    // Papan dibagi dua zona: baris 0-7 = zona tim merah (team 0), baris 8-15 = zona tim biru (team 1).
+    public const int ZoneSplitRow = 8;
+
+    public static int GetZoneOwner(int y)
+    {
+        return y < ZoneSplitRow ? 0 : 1;
+    }
+
+    public bool IsInEnemyZone()
+    {
+        if (isJailed || isGhost) return false;
+        return GetZoneOwner(currentY) != team;
+    }
+
+    // True kalau di akhir giliran pemiliknya bidak ini sudah berada di zona musuh.
+    // Dipakai untuk menghitung "bertahan 1 turn penuh".
+    [HideInInspector] public bool heldEnemyZoneAtOwnTurnEnd = false;
+
+    // Aura (glow + asap) saat berada di zona musuh. Dibuat lazy, di-toggle dari Update.
+    private GameObject zoneAura;
+    private bool zoneAuraShown = false;
+
+    private void UpdateZoneAura()
+    {
+        bool want = IsInEnemyZone() && !isAnimating;
+        if (want == zoneAuraShown) return;
+        zoneAuraShown = want;
+
+        if (want && zoneAura == null)
+        {
+            GameVfxManager vfx = GameVfxManager.EnsureInstance();
+            zoneAura = vfx.CreateZoneAura(transform);
+        }
+
+        if (zoneAura != null) zoneAura.SetActive(want);
     }
 
     public bool IsExemptFromAutoReturn()

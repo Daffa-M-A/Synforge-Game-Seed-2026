@@ -214,6 +214,88 @@ public class GameVfxManager : MonoBehaviour
         shape.radius = 0.08f;
     }
 
+    // ---- Zone Domination aura ----
+    [Header("Zone Domination Aura")]
+    [Tooltip("Warna glow + asap bidak yang berada di zona musuh.")]
+    public Color zoneAuraColor = new Color(0.62f, 0.32f, 1f, 1f); // ungu
+    [Tooltip("Jarak jangkau cahaya glow di sekitar bidak.")]
+    public float zoneAuraLightRange = 1.6f;
+    public float zoneAuraLightIntensity = 2.2f;
+    [Tooltip("Jumlah kepulan asap per detik.")]
+    public float zoneAuraSmokeRate = 7f;
+
+    // Membuat objek aura (asap ngepul + point light ungu) sebagai child bidak. Objek dikembalikan dalam keadaan aktif.
+    public GameObject CreateZoneAura(Transform parent)
+    {
+        GameObject root = new GameObject("ZoneAuraVfx");
+        root.transform.SetParent(parent, false);
+        root.transform.localPosition = Vector3.zero;
+
+        // Glow: point light berwarna di sekitar bidak
+        GameObject lightGo = new GameObject("ZoneGlowLight");
+        lightGo.transform.SetParent(root.transform, false);
+        lightGo.transform.localPosition = new Vector3(0f, 0.9f, 0f);
+        Light light = lightGo.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = zoneAuraColor;
+        light.range = zoneAuraLightRange;
+        light.intensity = zoneAuraLightIntensity;
+        light.shadows = LightShadows.None;
+
+        // Asap: partikel lembut yang naik perlahan dan memudar
+        GameObject smokeGo = new GameObject("ZoneSmoke");
+        smokeGo.transform.SetParent(root.transform, false);
+        smokeGo.transform.localPosition = new Vector3(0f, 0.1f, 0f);
+        ParticleSystem ps = smokeGo.AddComponent<ParticleSystem>();
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        var renderer = smokeGo.GetComponent<ParticleSystemRenderer>();
+        renderer.renderMode = ParticleSystemRenderMode.Billboard;
+        renderer.material = CreateParticleMaterial();
+        renderer.sortingFudge = -10f;
+
+        var main = ps.main;
+        main.loop = true;
+        main.playOnAwake = true;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.1f, 1.7f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.25f, 0.5f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.28f, 0.5f);
+        main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+        main.gravityModifier = -0.06f;
+        main.maxParticles = 40;
+        Color smokeStart = zoneAuraColor; smokeStart.a = 0.55f;
+        Color smokeEnd = Color.Lerp(zoneAuraColor, Color.white, 0.5f); smokeEnd.a = 0.35f;
+        main.startColor = new ParticleSystem.MinMaxGradient(smokeStart, smokeEnd);
+
+        var emission = ps.emission;
+        emission.rateOverTime = zoneAuraSmokeRate;
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.32f;
+        shape.radiusThickness = 1f;
+
+        var col = ps.colorOverLifetime;
+        col.enabled = true;
+        Gradient g = new Gradient();
+        g.SetKeys(
+            new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+            new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.2f), new GradientAlphaKey(0f, 1f) });
+        col.color = g;
+
+        var size = ps.sizeOverLifetime;
+        size.enabled = true;
+        size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.4f));
+
+        var rot = ps.rotationOverLifetime;
+        rot.enabled = true;
+        rot.z = new ParticleSystem.MinMaxCurve(-0.6f, 0.6f);
+
+        ps.Play(true);
+        return root;
+    }
+
     private static Material CreateParticleMaterial()
     {
         Shader shader = Shader.Find("Particles/Standard Unlit");

@@ -2077,6 +2077,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6406728a2321a9b439367d5b6dbf92b5, type: 2}
   - {fileID: 11400000, guid: 8e8be50dcdedeba4b817a59fd6656945, type: 2}
   - {fileID: 11400000, guid: e7ee85b0164ce7445be1bb1d8e26c94e, type: 2}
+  - {fileID: 11400000, guid: dbf9e05e611fad473d66e72e4cea199c, type: 2}
   - {fileID: 11400000, guid: 32059d9c16be8854d94b00a3ed35201f, type: 2}
   - {fileID: 11400000, guid: 631b448582761fa4daa7527f607c9cb1, type: 2}
   currentStageIndex: 0

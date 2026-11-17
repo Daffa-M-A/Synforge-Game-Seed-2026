@@ -14,7 +14,9 @@ public class PieceSetup
 [System.Serializable]
 public class TutorialObjective
 {
-    public enum ObjectiveType { MoveToTile, CaptureEnemy, FreePrisoner, CustomAnyMove, WaitForTimer, CaptureFortress, FreePlay }
+    // HoldEnemyZone: selesai otomatis saat tim pemain mendapat Zone Domination Point
+    // (bidak bertahan 1 turn penuh di zona musuh). Tidak butuh gerakan dari pemain.
+    public enum ObjectiveType { MoveToTile, CaptureEnemy, FreePrisoner, CustomAnyMove, WaitForTimer, CaptureFortress, FreePlay, HoldEnemyZone }
     public ObjectiveType type;
     public ChessPieceType pieceToMove;
     public Vector2Int targetPos; 

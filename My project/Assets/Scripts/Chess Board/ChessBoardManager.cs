@@ -45,6 +45,62 @@ public class ChessBoardManager : MonoBehaviour
     public int whiteJailCount = 0;
     public int blackJailCount = 0;
 
+    [Header("Zone Domination")]
+    [Tooltip("Poin yang harus dicapai untuk menang lewat dominasi zona.")]
+    public int zoneWinPoints = 100;
+    [Tooltip("Poin dominasi zona per tim (index 0 = merah, 1 = biru).")]
+    public int[] zonePoints = new int[2];
+    // (team, totalPoints, delta)
+    public event System.Action<int, int, int> OnZonePointsChanged;
+
+    public int GetZonePoints(int team)
+    {
+        if (zonePoints == null || team < 0 || team >= zonePoints.Length) return 0;
+        return zonePoints[team];
+    }
+
+    private void ResetZonePoints()
+    {
+        if (zonePoints == null || zonePoints.Length < 2) zonePoints = new int[2];
+        zonePoints[0] = 0;
+        zonePoints[1] = 0;
+        OnZonePointsChanged?.Invoke(0, 0, 0);
+        OnZonePointsChanged?.Invoke(1, 0, 0);
+    }
+
+    // Dipanggil saat giliran berpindah ke `team`: setiap bidak tim itu yang sudah berada
+    // di zona musuh sejak akhir giliran sebelumnya dan masih bertahan di sana menyumbang 1 poin.
+    private void AwardZonePoints(int team)
+    {
+        if (isGameOver) return;
+
+        int gained = 0;
+        List<ChessPiece> allPieces = CollectAllPieces();
+        for (int i = 0; i < allPieces.Count; i++)
+        {
+            ChessPiece piece = allPieces[i];
+            if (piece.team != team) continue;
+            if (piece.heldEnemyZoneAtOwnTurnEnd && piece.IsInEnemyZone()) gained++;
+        }
+
+        if (gained <= 0) return;
+
+        int before = zonePoints[team];
+        zonePoints[team] = Mathf.Min(zoneWinPoints, before + gained);
+        int delta = zonePoints[team] - before;
+        OnZonePointsChanged?.Invoke(team, zonePoints[team], delta);
+
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.NotifyZonePointsAwarded(team, delta);
+        }
+
+        if (zonePoints[team] >= zoneWinPoints && matchManager != null)
+        {
+            matchManager.DeclareZoneDominationWin(team);
+        }
+    }
+
     private void Start()
     {
         if (turnManager != null)
@@ -181,6 +237,7 @@ public class ChessBoardManager : MonoBehaviour
         blackJailCount = 0;
         globalChargeCounter = 0;
         chargeSequenceCounter = 0;
+        ResetZonePoints();
 
         void SpawnFromSetup(List<PieceSetup> setups)
         {
@@ -919,6 +976,14 @@ public class ChessBoardManager : MonoBehaviour
                 TryAutoReturnHome(piece);
             }
         }
+
+        // Zone Domination: catat bidak mana saja yang mengakhiri giliran ini di zona musuh.
+        // Setelah auto-return, supaya bidak yang ditarik pulang tidak ikut dihitung.
+        for (int i = 0; i < teamPieces.Count; i++)
+        {
+            ChessPiece piece = teamPieces[i];
+            piece.heldEnemyZoneAtOwnTurnEnd = piece.IsInEnemyZone();
+        }
     }
 
     private bool BlocksHomeReturn(ChessPiece occupant, ChessPiece mover)
@@ -1062,6 +1127,9 @@ public class ChessBoardManager : MonoBehaviour
 
     private void ProcessTurnLogic(bool isWhiteTurn)
     {
+        // Giliran kembali ke tim ini = bidaknya sudah bertahan 1 turn penuh di zona musuh
+        AwardZonePoints(isWhiteTurn ? 0 : 1);
+
         for (int x = 0; x < TILE_WIDTH; x++)
         {
             for (int y = 0; y < TILE_HEIGHT; y++)

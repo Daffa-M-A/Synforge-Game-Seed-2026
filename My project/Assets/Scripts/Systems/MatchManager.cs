@@ -55,6 +55,18 @@ public class MatchManager : MonoBehaviour
         }
     }
 
+    // Menang lewat Zone Domination Points (mencapai batas poin lebih dulu).
+    public void DeclareZoneDominationWin(int team)
+    {
+        if (boardManager.isGameOver) return;
+
+        // Di mode tutorial hanya berlaku pada stage free play (sama seperti kondisi menang lain)
+        if (TutorialManager.Instance != null && TutorialManager.Instance.isTutorialActive && !TutorialManager.Instance.IsFreePlayStage())
+            return;
+
+        DeclareWinner(team, fromGlobalTimer: false);
+    }
+
     public void ExecuteTiebreaker()
     {
         if (boardManager.isGameOver) return;
